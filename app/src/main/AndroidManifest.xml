@@ -36,6 +36,8 @@
     <uses-permission android:name="android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND" />
     <!-- Smart unlock: the CPU stays awake only during a visit near the car, so the lock is never late -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- The vibration confirming an automatic lock -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".BtCarKeyApp"

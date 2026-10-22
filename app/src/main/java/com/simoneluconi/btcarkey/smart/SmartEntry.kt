@@ -40,6 +40,13 @@ object SmartEntry {
         _status.value = status
     }
 
+    /**
+     * The guided calibration is running: the driver walks to and from the car on purpose, so a visit
+     * in progress measures but doesn't act.
+     */
+    @Volatile
+    var calibrating = false
+
     /** Whether the system last reported the car in range; null until it said anything in this process. */
     @Volatile
     private var present: Boolean? = null

@@ -59,6 +59,11 @@ Two ways to open the car as you walk up to it; turning one on turns the other of
    counts once.
 8. *Pause*: the notification shown near the car has a Pause button. Nothing opens or locks the car
    by itself until you tap *Resume* (a silent notification stays meanwhile); the car is left as it is.
+9. *Guided calibration*: stand by the door, then where the car should lock; the app measures both
+   spots and proposes the thresholds, shown on a map of the zones (the same map shows the live
+   signal next to the sliders).
+10. *Confirm automatic locks* (on by default): a short double vibration and a quiet notification when
+    the car locks by itself; if it couldn't be locked, a pop-up warning with a long vibration.
 
 A box doesn't advertise while a phone is connected to it, and Android's presence watching is based
 on advertising: while connected, Android soon reports the car "out of range". The app ignores any

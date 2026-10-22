@@ -8,6 +8,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -63,6 +64,7 @@ fun SmartScreen() {
     val lockDbm by app.smart.lockDbm.collectAsStateWithLifecycle()
     val requireUnlocked by app.smart.requirePhoneUnlocked.collectAsStateWithLifecycle()
     val cooldown by app.smart.cooldown.collectAsStateWithLifecycle()
+    val confirmLock by app.smart.confirmLock.collectAsStateWithLifecycle()
     val returnWindow by app.smart.returnWindowMin.collectAsStateWithLifecycle()
     val legacy by app.controller.legacyAutoLock.collectAsStateWithLifecycle()
     val device = devices.firstOrNull { it.serial == selected }
@@ -207,13 +209,25 @@ fun SmartScreen() {
 
         SectionTitle(stringResource(R.string.smart_distances))
         Card {
+            val live = level?.takeIf { ready != null }
             if (ready != null) {
-                SignalMeter(level, unlockDbm, lockDbm)
-                Spacer(Modifier.height(4.dp))
-                Label(stringResource(R.string.smart_live_hint), size = 13.sp, color = colors.text2)
-            } else {
-                Label(stringResource(R.string.live_needs_connection), size = 13.sp, color = colors.text2)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Label(live?.let { "-$it dBm" } ?: "…", size = 28.sp, weight = FontWeight.ExtraBold, tabular = true)
+                    Spacer(Modifier.width(12.dp))
+                    val zone = when {
+                        live == null -> null
+                        live <= unlockDbm -> R.string.zone_unlock
+                        live >= lockDbm -> R.string.zone_lock
+                        else -> R.string.zone_between
+                    }
+                    if (zone != null) Label(stringResource(zone), color = colors.text2)
+                }
+                Spacer(Modifier.height(10.dp))
             }
+            // The zones follow the sliders; the phone's live signal moves along them
+            DistanceMap(unlockDbm, lockDbm, live?.let { listOf(MapPin(it, colors.accent, stringResource(R.string.smartcal_you))) }.orEmpty())
+            Spacer(Modifier.height(4.dp))
+            Label(stringResource(if (ready != null) R.string.smart_live_hint else R.string.live_needs_connection), size = 13.sp, color = colors.text2)
             Spacer(Modifier.height(14.dp))
             // Bounded ranges: unlock only close to the car, lock while the link is still there
             ThresholdSlider(stringResource(R.string.comfort_unlock_at), unlockDbm, SmartEntryLogic.UNLOCK_RANGE) { value ->
@@ -227,6 +241,9 @@ fun SmartScreen() {
             Label(stringResource(R.string.smart_scale_hint), size = 13.sp, color = colors.text2)
             Spacer(Modifier.height(4.dp))
             Label(stringResource(R.string.smart_thresholds_hint), size = 13.sp, color = colors.text2)
+            Spacer(Modifier.height(12.dp))
+            PillButton(stringResource(R.string.smartcal_title), Modifier.fillMaxWidth(), icon = AppIcons.Radar,
+                style = ButtonStyle.PRIMARY, enabled = ready != null) { nav.navigate(Screen.SmartCalibrate) }
             Spacer(Modifier.height(10.dp))
             Hairline()
             Spacer(Modifier.height(12.dp))
@@ -248,6 +265,13 @@ fun SmartScreen() {
                 subtitle = stringResource(R.string.smart_require_unlocked_hint),
                 icon = AppIcons.Shield,
                 trailing = { Toggle(requireUnlocked, app.smart::setRequirePhoneUnlocked) },
+            )
+            Hairline()
+            SettingRow(
+                title = stringResource(R.string.smart_confirm_lock),
+                subtitle = stringResource(R.string.smart_confirm_lock_hint),
+                icon = AppIcons.Lock,
+                trailing = { Toggle(confirmLock, app.smart::setConfirmLock) },
             )
             Hairline()
             SettingRow(

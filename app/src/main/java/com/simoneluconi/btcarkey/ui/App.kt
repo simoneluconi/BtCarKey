@@ -61,6 +61,7 @@ sealed interface Screen {
     data class Device(val serial: String) : Screen
     data object Comfort : Screen
     data object Smart : Screen
+    data object SmartCalibrate : Screen
     data object Calibrate : Screen
     data object Settings : Screen
     data object Log : Screen
@@ -156,6 +157,7 @@ fun AppRoot(
                             is Screen.Device -> DeviceScreen(screen.serial)
                             Screen.Comfort -> ComfortScreen()
                             Screen.Smart -> SmartScreen()
+                            Screen.SmartCalibrate -> SmartCalibrateScreen()
                             Screen.Calibrate -> CalibrateScreen()
                             Screen.Settings -> SettingsScreen()
                             Screen.Log -> LogScreen()

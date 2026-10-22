@@ -155,7 +155,12 @@ class SmartEntryService : Service() {
             val rssi = withTimeoutOrNull(RSSI_TIMEOUT_MS) { controller.readLinkRssi() }
             val phoneUnlocked = !keyguard.isDeviceLocked
             // No sample (reads failing): the time-based decisions still apply
-            val decision = if (rssi != null) logic.onSample(rssi, now, phoneUnlocked) else logic.onTick(now)
+            val decision = when {
+                // Walking to and from the car on purpose: measure, never act (and no timeout meanwhile)
+                SmartEntry.calibrating -> Decision.NONE.also { if (rssi != null) logic.onSample(rssi, now, phoneUnlocked) }
+                rssi != null -> logic.onSample(rssi, now, phoneUnlocked)
+                else -> logic.onTick(now)
+            }
             val level = logic.level
             if (rssi == null) {
                 EventLog.log("Smart: no signal reading")
@@ -176,6 +181,7 @@ class SmartEntryService : Service() {
                             logic.onUnlocked(now)
                             leftOpen = name
                             unlockedThisVisit = true
+                            SmartNotifications.cancelLocked(this)
                             // One visit is one unlock for the cooldown and the safety net, however many
                             // times the driver comes back (loading the car). The safety net may suspend
                             // here: this visit can still lock, never unlock again
@@ -196,6 +202,7 @@ class SmartEntryService : Service() {
                     logic.onLocked(now)
                     leftOpen = null
                     SmartEntry.onCarLocked(this)
+                    if (app.smart.confirmLock.value) SmartNotifications.showLocked(this, name)
                     // The cooldown judges visits that unlocked; a lock that only closes a car left open isn't one
                     val nowSuspended = unlockedThisVisit && SmartEntry.onLocked(this)
                     if (nowSuspended || suspended) return finish("locked, suspended", Rest.AFTER_VISIT)
@@ -240,7 +247,7 @@ class SmartEntryService : Service() {
         if (app.smart.leftOpen.value) return
         EventLog.log("Smart: leaving $name unlocked, could not lock: locking it the next time it is in range")
         app.smart.setLeftOpen(true)
-        SmartNotifications.showNotLocked(this, name)
+        SmartNotifications.showNotLocked(this, name, urgent = app.smart.confirmLock.value)
         SmartEntry.onUsed(this)
     }
 

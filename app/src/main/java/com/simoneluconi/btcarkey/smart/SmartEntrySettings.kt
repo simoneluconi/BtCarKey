@@ -127,6 +127,15 @@ class SmartEntrySettings(context: Context) {
         }
     }
 
+    private val _confirmLock = MutableStateFlow(prefs.getBoolean(CONFIRM_LOCK, true))
+    /** A short vibration and a quiet notification when smart unlock locks the car. On by default. */
+    val confirmLock: StateFlow<Boolean> = _confirmLock.asStateFlow()
+
+    fun setConfirmLock(value: Boolean) {
+        prefs.edit { putBoolean(CONFIRM_LOCK, value) }
+        _confirmLock.value = value
+    }
+
     fun setRequirePhoneUnlocked(value: Boolean) {
         prefs.edit { putBoolean(REQUIRE_UNLOCKED, value) }
         _requirePhoneUnlocked.value = value
@@ -142,6 +151,7 @@ class SmartEntrySettings(context: Context) {
         const val SUSPENDED_AT = "suspended_at"
         const val PAUSED = "paused"
         const val LEFT_OPEN = "left_open"
+        const val CONFIRM_LOCK = "confirm_lock"
         const val COOLDOWN = "cooldown"
         const val RETURN_WINDOW = "return_window_min"
         const val CYCLES = "cycles"

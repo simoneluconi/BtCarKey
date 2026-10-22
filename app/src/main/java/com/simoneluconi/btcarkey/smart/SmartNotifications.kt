@@ -7,7 +7,9 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.text.format.DateFormat
 import androidx.core.app.NotificationCompat
+import java.util.Date
 import com.simoneluconi.btcarkey.EventLog
 import com.simoneluconi.btcarkey.MainActivity
 import com.simoneluconi.btcarkey.R
@@ -16,13 +18,22 @@ import com.simoneluconi.btcarkey.R
 object SmartNotifications {
     private const val CHANNEL_ACTIVE = "smart_active"
     private const val CHANNEL_ALERTS = "smart_alerts"
+    private const val CHANNEL_LOCKED = "smart_locked"
+    private const val CHANNEL_NOT_LOCKED = "smart_not_locked"
     const val ACTIVE_ID = 10
     private const val SUSPENDED_ID = 11
     private const val NOT_LOCKED_ID = 12
     private const val NEEDS_SETUP_ID = 13
     private const val PAUSED_ID = 14
+    private const val LOCKED_ID = 15
+    /** Two short pulses: felt through a pocket, unlike any common notification. */
+    private val LOCKED_VIBRATION = longArrayOf(0, 70, 90, 70)
+    /** Three long pulses: unmistakably not the "locked" one. */
+    private val NOT_LOCKED_VIBRATION = longArrayOf(0, 450, 150, 450, 150, 450)
     const val ACTION_RESUME = "com.simoneluconi.btcarkey.SMART_RESUME"
     const val ACTION_PAUSE = "com.simoneluconi.btcarkey.SMART_PAUSE"
+    /** The lock confirmation goes away by itself after a while: it is news, not a state. */
+    private const val LOCKED_TIMEOUT_MS = 30 * 60_000L
 
     @Volatile
     private var channelsReady = false
@@ -42,6 +53,24 @@ object SmartNotifications {
         manager.createNotificationChannel(
             NotificationChannel(CHANNEL_ALERTS, context.getString(R.string.smart_channel_alerts), NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = context.getString(R.string.smart_channel_alerts_description)
+            }
+        )
+        // No sound, just the vibration: the system plays it (and honours Do not disturb)
+        manager.createNotificationChannel(
+            NotificationChannel(CHANNEL_LOCKED, context.getString(R.string.smart_channel_locked), NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = context.getString(R.string.smart_channel_locked_description)
+                setSound(null, null)
+                enableVibration(true)
+                vibrationPattern = LOCKED_VIBRATION
+                setShowBadge(false)
+            }
+        )
+        // The car may be open: pops up, with the default sound and a long vibration
+        manager.createNotificationChannel(
+            NotificationChannel(CHANNEL_NOT_LOCKED, context.getString(R.string.smart_channel_not_locked), NotificationManager.IMPORTANCE_HIGH).apply {
+                description = context.getString(R.string.smart_channel_not_locked_description)
+                enableVibration(true)
+                vibrationPattern = NOT_LOCKED_VIBRATION
             }
         )
     }
@@ -84,6 +113,28 @@ object SmartNotifications {
             addAction(0, context.getString(R.string.smart_resume), broadcast(context, ACTION_RESUME, 1))
         }
 
+    /** Smart unlock locked the car: a short vibration and a quiet line, gone at the next unlock. */
+    fun showLocked(context: Context, name: String) {
+        channels(context)
+        val time = DateFormat.getTimeFormat(context).format(Date())
+        val notification = NotificationCompat.Builder(context, CHANNEL_LOCKED)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.getString(R.string.smart_locked_title, name))
+            .setContentText(context.getString(R.string.smart_locked_text, time))
+            .setContentIntent(openApp(context))
+            .setVibrate(LOCKED_VIBRATION)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setAutoCancel(true)
+            .setTimeoutAfter(LOCKED_TIMEOUT_MS)
+            .build()
+        runCatching { context.getSystemService(NotificationManager::class.java).notify(LOCKED_ID, notification) }
+            .onFailure { EventLog.log("Smart: couldn't confirm the lock (${it.javaClass.simpleName})") }
+    }
+
+    fun cancelLocked(context: Context) {
+        context.getSystemService(NotificationManager::class.java).cancel(LOCKED_ID)
+    }
+
     fun cancelNotLocked(context: Context) {
         context.getSystemService(NotificationManager::class.java).cancel(NOT_LOCKED_ID)
     }
@@ -92,17 +143,31 @@ object SmartNotifications {
         context.getSystemService(NotificationManager::class.java).cancel(PAUSED_ID)
     }
 
-    /** The lock couldn't be sent (link dropped, or the box refused it): the car may still be open. */
-    fun showNotLocked(context: Context, name: String) =
-        alert(context, NOT_LOCKED_ID, context.getString(R.string.smart_not_locked_title, name), context.getString(R.string.smart_not_locked_text))
+    /**
+     * The lock couldn't be sent (link dropped, or the box refused it): the car may still be open.
+     * [urgent] (lock confirmations on): pops up with a long vibration, unlike the "locked" one.
+     */
+    fun showNotLocked(context: Context, name: String, urgent: Boolean) = alert(
+        context, NOT_LOCKED_ID, context.getString(R.string.smart_not_locked_title, name), context.getString(R.string.smart_not_locked_text),
+        channel = if (urgent) CHANNEL_NOT_LOCKED else CHANNEL_ALERTS,
+    ) {
+        if (urgent) {
+            setVibrate(NOT_LOCKED_VIBRATION)
+            setPriority(NotificationCompat.PRIORITY_HIGH)
+            setCategory(NotificationCompat.CATEGORY_ALARM)
+        }
+    }
 
     /** Smart unlock stopped because the box changed address: it needs turning on again (new association). */
     fun showNeedsSetup(context: Context) =
         alert(context, NEEDS_SETUP_ID, context.getString(R.string.smart_needs_setup_title), context.getString(R.string.smart_needs_setup_text))
 
-    private fun alert(context: Context, id: Int, title: String, text: String, extra: NotificationCompat.Builder.() -> Unit = {}) {
+    private fun alert(
+        context: Context, id: Int, title: String, text: String, channel: String = CHANNEL_ALERTS,
+        extra: NotificationCompat.Builder.() -> Unit = {},
+    ) {
         channels(context)
-        val notification = NotificationCompat.Builder(context, CHANNEL_ALERTS)
+        val notification = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(text)
