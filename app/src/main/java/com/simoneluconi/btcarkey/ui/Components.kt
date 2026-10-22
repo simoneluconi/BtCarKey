@@ -1,5 +1,6 @@
 package com.simoneluconi.btcarkey.ui
 
+import android.os.Build
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -89,11 +90,13 @@ fun rememberHaptics(): (Haptic) -> Unit {
     return remember(view, enabled) {
         { kind ->
             if (enabled) {
+                // CONFIRM and REJECT are Android 11+: a plain tap and a long press before
+                val modern = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
                 view.performHapticFeedback(
                     when (kind) {
                         Haptic.TAP -> HapticFeedbackConstants.VIRTUAL_KEY
-                        Haptic.CONFIRM -> HapticFeedbackConstants.CONFIRM
-                        Haptic.REJECT -> HapticFeedbackConstants.REJECT
+                        Haptic.CONFIRM -> if (modern) HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.VIRTUAL_KEY
+                        Haptic.REJECT -> if (modern) HapticFeedbackConstants.REJECT else HapticFeedbackConstants.LONG_PRESS
                     }
                 )
             }
@@ -298,7 +301,7 @@ fun Toggle(checked: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = M
                 .offset { IntOffset((knob * 20.dp.toPx()).roundToInt(), 0) }
                 .size(24.dp)
                 .clip(CircleShape)
-                .background(Color.White)
+                .background(colors.knob)
         )
     }
 }

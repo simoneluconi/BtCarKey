@@ -22,6 +22,7 @@ import com.simoneluconi.btcarkey.protocol.AutoLockConfig
 import com.simoneluconi.btcarkey.protocol.BoxStatus
 import com.simoneluconi.btcarkey.protocol.CarCommand
 import com.simoneluconi.btcarkey.protocol.CommandAck
+import com.simoneluconi.btcarkey.protocol.Feature
 import com.simoneluconi.btcarkey.protocol.KeyProtocol
 import com.simoneluconi.btcarkey.protocol.PhoneInfo
 import com.simoneluconi.btcarkey.protocol.ProtocolSession
@@ -33,6 +34,7 @@ import com.simoneluconi.btcarkey.settings.ActionConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -46,6 +48,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import no.nordicsemi.android.ble.callback.FailCallback
 import no.nordicsemi.android.ble.observer.ConnectionObserver
@@ -71,7 +74,7 @@ import kotlin.math.min
  *   then the link runs at the low-power connection interval;
  * - on a problem the driver has to look at (wrong key...), nothing retries by itself.
  */
-class CarKeyController(private val context: Context, val store: DeviceStore) {
+class CarKeyController(private val context: Context, private val store: DeviceStore) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val scanner = BoxScanner(context)
     private val adapter: BluetoothAdapter? get() = context.getSystemService(BluetoothManager::class.java)?.adapter
@@ -82,6 +85,13 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
     private val _status = MutableStateFlow(BoxStatus())
     /** Battery & co. of the connected device, as far as it reported them. */
     val status: StateFlow<BoxStatus> = _status.asStateFlow()
+
+    private val _legacyAutoLock = MutableStateFlow<AutoLockConfig?>(null)
+    /**
+     * The box's own comfort entry (legacy) as read on this connection; null when not read (not
+     * connected, or a protocol without it). Smart unlock and legacy are never on together.
+     */
+    val legacyAutoLock: StateFlow<AutoLockConfig?> = _legacyAutoLock.asStateFlow()
 
     private val _busy = MutableStateFlow<CarCommand?>(null)
     /** The command waiting for its answer, if any. */
@@ -97,13 +107,20 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
     private var foreground = false
     /** Stay connected in the background (KeepConnectedService runs meanwhile). */
     private var keepAlive = false
+    /** Smart unlock is working near the car (SmartEntryService runs meanwhile). */
+    private var smartActive = false
+    /** Disconnected on purpose while the system looks for the device (it doesn't advertise while connected). */
+    private var paused = false
     /** Whether a connection is wanted at all. */
-    private val wanted: Boolean get() = foreground || keepAlive
+    private val wanted: Boolean get() = (foreground || keepAlive || smartActive) && !paused
     private var connectJob: Job? = null
     private var authJob: Job? = null
     private var stopJob: Job? = null
-    /** Consecutive failed attempts, for the back-off. */
+    private var pauseJob: Job? = null
+    /** Consecutive failed connection attempts, for the back-off. */
     private var failures = 0
+    /** Consecutive authentications that failed on a glitch (not a refusal), retried a few times. */
+    private var authFailures = 0
     /** Devices from scans: they carry the right address type, better than one rebuilt from the address. */
     private val scanned = HashMap<String, BluetoothDevice>()
 
@@ -141,15 +158,24 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
     /** The protocol a saved device speaks; null if this build doesn't know it. */
     fun protocolOf(device: SavedDevice): KeyProtocol? = Protocols.byId(device.protocolId)
 
+    /** Linked to [serial] right now (authenticated or authenticating): the box isn't advertising. */
+    fun isLinkedTo(serial: String): Boolean = when (val s = _state.value) {
+        is LinkState.Ready -> s.serial == serial
+        is LinkState.Authenticating -> s.serial == serial
+        else -> false
+    }
+
+    /** Stopped on a problem only the driver can fix (key, protocol): connecting again would fail the same way. */
+    private fun waitsForDriver(): Boolean {
+        val current = _state.value
+        return current is LinkState.Problem && current.kind in DRIVER_PROBLEMS && current.serial == store.selected.value
+    }
+
     /** The app is on screen: connect. */
     fun onForeground() {
         stopJob?.cancel()
         foreground = true
-        val current = _state.value
-        val waitsForDriver = current is LinkState.Problem && current.kind in setOf(
-            ProblemKind.KEY_MISSING, ProblemKind.KEY_REJECTED, ProblemKind.NOT_SUPPORTED, ProblemKind.PAIRING_FAILED,
-        ) && current.serial == store.selected.value
-        if (!waitsForDriver) start()
+        if (!waitsForDriver()) start()
         manager?.setLowPower(false)
     }
 
@@ -157,7 +183,7 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
     fun onBackground() {
         foreground = false
         stopJob?.cancel()
-        if (keepAlive) {
+        if (keepAlive || smartActive) {
             manager?.setLowPower(true)
             return
         }
@@ -185,6 +211,45 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
         }
     }
 
+    /** Connection wanted while smart unlock works near the car (driven by SmartEntryService). */
+    fun setSmartActive(enabled: Boolean) {
+        if (smartActive == enabled) return
+        smartActive = enabled
+        if (enabled) {
+            stopJob?.cancel()
+            if (!waitsForDriver()) start()
+            if (!foreground) manager?.setLowPower(true)
+        } else if (!wanted) {
+            EventLog.log("Smart unlock done, disconnecting")
+            teardown()
+        }
+    }
+
+    /**
+     * Lets go of the device while the system's companion dialog looks for it: a connected box stops
+     * advertising, so the dialog wouldn't find it. [paused] false reconnects; so does [PAUSE_MAX_MS]
+     * going by, in case the dialog's result never comes back.
+     */
+    fun pauseForAssociation(paused: Boolean) {
+        if (this.paused == paused) return
+        this.paused = paused
+        pauseJob?.cancel()
+        if (paused) {
+            EventLog.log("Disconnecting while the system looks for the device")
+            teardown()
+            pauseJob = scope.launch {
+                delay(PAUSE_MAX_MS)
+                EventLog.log("The system's search took too long, reconnecting")
+                pauseForAssociation(false)
+            }
+        } else {
+            start()
+        }
+    }
+
+    /** The link's signal as the phone measures it (negative dBm), null when not connected. */
+    suspend fun readLinkRssi(): Int? = if (_state.value is LinkState.Ready) manager?.readLinkRssi() else null
+
     /**
      * Makes [serial] the device in use and (re)connects to it, once: selecting another device restarts
      * the link by itself, the same device needs a fresh start (e.g. its key just changed). Two connection
@@ -197,6 +262,7 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
     /** Permissions were granted, Bluetooth turned on, a key imported, or the driver tapped Retry. */
     fun retry() {
         failures = 0
+        authFailures = 0
         restart()
     }
 
@@ -328,14 +394,17 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
             // The direct attempt found nothing: hand over to the controller's low-power wait
             !waiting -> waitFor(m, serial, device)
             // The wait itself broke (rare: stack trouble): back off and start over
-            else -> scheduleReconnect(m, serial)
+            else -> scheduleReconnect(serial, ++failures, m)
         }
     }
 
-    /** Back-off retry while the app is open: 2, 4, 8 ... 60 s. */
-    private fun scheduleReconnect(m: BoxBleManager, serial: String) {
-        failures++
-        val wait = min(MAX_BACKOFF_MS, 1000L shl min(failures, 6))
+    /**
+     * Starts over after a back-off of 2, 4, 8 ... 60 s for the [attempt]th time. [m]: the manager it
+     * is for, the retry is dropped if another one took over; null after a teardown. Whatever starts
+     * a connection meanwhile cancels it ([connectJob]).
+     */
+    private fun scheduleReconnect(serial: String, attempt: Int, m: BoxBleManager?) {
+        val wait = min(MAX_BACKOFF_MS, 1000L shl min(attempt, 6))
         _state.value = LinkState.Connecting(serial, waiting = true)
         connectJob?.cancel()
         connectJob = scope.launch {
@@ -351,9 +420,8 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
         private val protocol: KeyProtocol,
     ) : ConnectionObserver {
         override fun onDeviceConnecting(device: BluetoothDevice) {
-            if (m !== manager) return
-            val waiting = (_state.value as? LinkState.Connecting)?.waiting ?: true
-            if (_state.value !is LinkState.Connecting) _state.value = LinkState.Connecting(serial, waiting)
+            // The library reconnecting by itself after a link loss
+            if (m === manager && _state.value !is LinkState.Connecting) _state.value = LinkState.Connecting(serial, waiting = true)
         }
 
         override fun onDeviceConnected(device: BluetoothDevice) {
@@ -382,7 +450,7 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
                     _state.value = LinkState.Connecting(serial, waiting = true)
                 ConnectionObserver.REASON_NOT_SUPPORTED ->
                     stopWithProblem(serial, ProblemKind.NOT_SUPPORTED, "The device at this address doesn't speak its protocol")
-                else -> if (wanted) scheduleReconnect(m, serial)
+                else -> if (wanted) scheduleReconnect(serial, ++failures, m)
             }
         }
     }
@@ -417,11 +485,23 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
         when (outcome) {
             is AuthOutcome.Verified, is AuthOutcome.Paired -> {
                 failures = 0
+                authFailures = 0
                 val info = outcome.info!!
                 _state.value = LinkState.Ready(serial, info, newPairing = outcome is AuthOutcome.Paired, protocol = protocol)
                 _status.value = _status.value.merge(BoxStatus(firmware = info.firmware))
                 m.setLowPower(!foreground)
-                session?.let { s -> scope.launch { runCatching { s.start() } } }
+                session?.let { s ->
+                    scope.launch {
+                        runCatching { s.start() }
+                        // Once per connection: is the box's own comfort entry on? (shown, and never on with smart unlock)
+                        if (Feature.PROXIMITY in protocol.features) {
+                            runCatching { s.readAutoLock() }.onSuccess {
+                                _legacyAutoLock.value = it
+                                if (it.enabled) EventLog.log("Comfort entry (legacy) is on in the box")
+                            }
+                        }
+                    }
+                }
             }
             is AuthOutcome.MissingKey ->
                 stopWithProblem(serial, ProblemKind.KEY_MISSING, "The device is paired with a key this phone doesn't have")
@@ -434,24 +514,13 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
             is AuthOutcome.Failed -> {
                 EventLog.log("Auth failed: ${outcome.reason}")
                 // Often a glitch of this connection: reconnect a few times, then stop and ask
-                if (failures < MAX_PROTOCOL_RETRIES) {
+                if (authFailures < MAX_PROTOCOL_RETRIES) {
                     teardown(keepState = true)
-                    scheduleReconnectAfterTeardown(serial)
+                    scheduleReconnect(serial, ++authFailures, null)
                 } else {
                     stopWithProblem(serial, ProblemKind.PROTOCOL, outcome.reason)
                 }
             }
-        }
-    }
-
-    private fun scheduleReconnectAfterTeardown(serial: String) {
-        failures++
-        val wait = min(MAX_BACKOFF_MS, 1000L shl min(failures, 6))
-        _state.value = LinkState.Connecting(serial, waiting = true)
-        connectJob = scope.launch {
-            EventLog.log("Reconnecting in ${wait / 1000} s")
-            delay(wait)
-            if (wanted) start()
         }
     }
 
@@ -480,10 +549,23 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
     /** Runs a one-tap action the way the driver configured it (device command or remote button presses). */
     fun send(command: CarCommand, config: ActionConfig = ActionConfig()) {
         if (_busy.value != null) return
-        scope.launch {
-            val result = if (config.method == ActionConfig.Method.REMOTE) pressSequence(command, config) else sendNow(command)
-            _results.emit(result)
+        scope.launch { execute(command, config) }
+    }
+
+    /**
+     * Like [send], waiting for the outcome (smart unlock); the result also goes to [results]. A
+     * command already running (a tap on the screen) is waited for first, up to [BUSY_WAIT_MS].
+     */
+    suspend fun execute(command: CarCommand, config: ActionConfig = ActionConfig()): CommandResult {
+        // The flow's value is null when free, so the wait itself must yield something non-null
+        val free = withTimeoutOrNull(BUSY_WAIT_MS) { _busy.first { it == null }; true } ?: false
+        if (!free) {
+            EventLog.log("Command: $command dropped, ${_busy.value} still running")
+            return CommandResult.Failed(command, "Another command is still running")
         }
+        val result = if (config.method == ActionConfig.Method.REMOTE) pressSequence(command, config) else sendNow(command)
+        _results.emit(result)
+        return result
     }
 
     private suspend fun sendNow(command: CarCommand): CommandResult {
@@ -525,8 +607,8 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
         } catch (e: IOException) {
             CommandResult.Failed(command, e.message ?: "Disconnected")
         } finally {
-            // A button must never stay pressed: release it even if the sequence was cut short
-            if (down) runCatching { s.press(button, false) }
+            // A button must never stay pressed: release it even if the sequence was cut short, or cancelled
+            if (down) withContext(NonCancellable) { runCatching { s.press(button, false) } }
             _busy.value = null
         }.also { EventLog.log("Command: $it") }
     }
@@ -558,9 +640,11 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
     suspend fun writeRawConfig(kind: RawConfigKind, bytes: ByteArray): Result<Unit> = withSession { it.writeRawConfig(kind, bytes) }
 
     /** Comfort entry settings as the device holds them. */
-    suspend fun readAutoLock(): Result<AutoLockConfig> = withSession { it.readAutoLock() }
+    suspend fun readAutoLock(): Result<AutoLockConfig> =
+        withSession { it.readAutoLock() }.onSuccess { _legacyAutoLock.value = it }
 
-    suspend fun writeAutoLock(config: AutoLockConfig): Result<Unit> = withSession { it.writeAutoLock(config) }
+    suspend fun writeAutoLock(config: AutoLockConfig): Result<Unit> =
+        withSession { it.writeAutoLock(config) }.onSuccess { _legacyAutoLock.value = config }
 
     /** Clears the device's key and sets a new random one: every other phone's key stops working. */
     suspend fun repair(): Result<Unit> {
@@ -573,6 +657,8 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
         } catch (e: IOException) {
             AuthOutcome.Failed(null, e.message ?: "Disconnected")
         }
+        // The link may have dropped or moved on to another device meanwhile: that one's state isn't ours
+        if (m !== manager) return Result.failure(IOException("Disconnected"))
         onAuthOutcome(m, ready.serial, ready.protocol, outcome)
         return if (outcome.isAuthenticated) Result.success(Unit) else Result.failure(IOException(outcome.toString()))
     }
@@ -594,6 +680,7 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
         session?.close()
         session = null
         _busy.value = null
+        _legacyAutoLock.value = null
     }
 
     /** Closes everything for the current device. Leaves [state] alone when [keepState]. */
@@ -633,6 +720,13 @@ class CarKeyController(private val context: Context, val store: DeviceStore) {
         private const val MAX_PROTOCOL_RETRIES = 3
         /** Pause between presses of a double/triple press, like a quick human double click. */
         private const val PRESS_GAP_MS = 250L
+        /** Longer than any press sequence the settings allow (3 presses of 6 s). */
+        private const val BUSY_WAIT_MS = 20_000L
+        /** The companion dialog searches for less than this. */
+        private const val PAUSE_MAX_MS = 120_000L
+        private val DRIVER_PROBLEMS = setOf(
+            ProblemKind.KEY_MISSING, ProblemKind.KEY_REJECTED, ProblemKind.NOT_SUPPORTED, ProblemKind.PAIRING_FAILED,
+        )
 
         fun requiredPermissions(): Array<String> =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

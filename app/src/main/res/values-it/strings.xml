@@ -8,6 +8,9 @@
     <string name="remove">Elimina</string>
     <string name="yes">Sì</string>
     <string name="no">No</string>
+    <string name="back">Indietro</string>
+    <string name="move_up">Sposta su</string>
+    <string name="move_down">Sposta giù</string>
 
     <!-- Home -->
     <string name="home_your_car">La tua auto</string>
@@ -19,7 +22,7 @@
     <string name="hint_hold_button">Attivo finché tieni premuto</string>
     <string name="result_done">%1$s: fatto</string>
     <string name="result_unconfirmed">%1$s: inviato, nessuna conferma dal box</string>
-    <string name="result_failed">%1$s non riuscito: %2$s</string>
+    <string name="result_failed">%1$s non riuscito</string>
 
     <!-- Actions -->
     <string name="action_unlock">Sblocca</string>
@@ -68,6 +71,12 @@
     <string name="problem_not_supported">Box non supportato</string>
     <string name="problem_not_found">Box non trovato</string>
     <string name="problem_protocol">Problema di comunicazione</string>
+    <string name="problem_key_missing_detail">Il box è associato a una chiave che questo telefono non ha</string>
+    <string name="problem_key_rejected_detail">Il box ha rifiutato la chiave salvata</string>
+    <string name="problem_pairing_detail">Il box ha rifiutato la nuova chiave</string>
+    <string name="problem_not_supported_detail">Il dispositivo a questo indirizzo non parla il protocollo del box</string>
+    <string name="problem_not_found_detail">Fuori portata, o connesso a un altro telefono</string>
+    <string name="problem_protocol_detail">Il box non ha risposto come previsto</string>
 
     <!-- Garage -->
     <string name="garage_title">I tuoi box</string>
@@ -153,7 +162,73 @@
     <string name="auth_prompt_subtitle">Conferma che sei tu</string>
 
     <!-- Comfort entry -->
-    <string name="comfort_title">Comfort entry</string>
+    <string name="comfort_title_legacy">Comfort entry (legacy)</string>
+    <string name="comfort_legacy_vs_smart">Decide il box, misurando questo telefono: il telefono deve restare sempre connesso (Resta connesso) e consuma più batteria. Lo sblocco smart fa lo stesso dal telefono, connettendosi solo quando Android vede l\'auto nelle vicinanze. Solo uno dei due può essere attivo.</string>
+    <string name="comfort_smart_is_on">Lo sblocco smart è attivo: attivando questo, lo sblocco smart viene spento.</string>
+    <string name="comfort_confirm_smart_off">Comfort entry (legacy) e sblocco smart non possono essere attivi insieme: lo sblocco smart verrà spento.</string>
+    <string name="comfort_confirm_switch">Cambia</string>
+
+    <!-- Smart unlock -->
+    <string name="smart_title">Sblocco smart</string>
+    <string name="smart_intro">Sblocca l\'auto quando ti avvicini e la blocca quando ti allontani, anche ad app chiusa. Android si accorge dell\'auto nelle vicinanze quasi senza consumare batteria; solo allora il telefono si connette e misura il segnale.</string>
+    <string name="smart_enable">Sblocco e blocco smart</string>
+    <string name="smart_status_off">Spento</string>
+    <string name="smart_status_watching">Attivo: in attesa che l\'auto sia nelle vicinanze</string>
+    <string name="smart_status_near">Vicino all\'auto: connessione</string>
+    <string name="smart_status_near_level">Vicino all\'auto · segnale -%1$d dBm</string>
+    <string name="smart_status_unlocked">Sbloccata: si blocca quando ti allontani</string>
+    <string name="smart_status_resting">Fatto per questa volta: si riattiva dopo che ti sei allontanato</string>
+    <string name="smart_status_locked_nearby">Bloccata: si risblocca se torni a breve</string>
+    <string name="smart_return_window">Se torni dopo il blocco</string>
+    <string name="smart_return_window_hint">Dopo il blocco, l\'auto si risblocca se torni entro questo tempo (hai dimenticato qualcosa), anche senza essere uscito dalla portata Bluetooth. Poi resta a riposo finché non ti sei allontanato.</string>
+    <string name="smart_minutes">%1$d min</string>
+    <string name="smart_near_locked">%1$s bloccata: si risblocca se torni entro %2$d min</string>
+    <string name="smart_status_suspended">Sospeso (sei passato vicino all\'auto più volte). Si riattiva da solo alle %1$s</string>
+    <string name="smart_resume">Riattiva</string>
+    <string name="smart_pause">Pausa</string>
+    <string name="smart_notifications_off">Le notifiche di questa app sono spente: non sapresti se l\'auto potrebbe essere rimasta aperta.</string>
+    <string name="smart_notifications_turn_on">Attiva le notifiche</string>
+    <string name="smart_status_paused">In pausa: niente apre o chiude l\'auto da solo finché non lo riattivi</string>
+    <string name="smart_paused_title">Sblocco smart in pausa</string>
+    <string name="smart_paused_text">Niente apre o chiude l\'auto da solo finché non lo riattivi. L\'auto è rimasta com\'era.</string>
+    <string name="smart_needs_android12">Serve Android 12 o successivo.</string>
+    <string name="smart_not_supported">Questo box non può sbloccare e bloccare con i suoi comandi.</string>
+    <string name="smart_needs_connection">Connettiti al box per attivarlo: Android chiede una volta di associarlo come dispositivo companion.</string>
+    <string name="smart_turned_on">Sblocco smart attivo</string>
+    <string name="smart_failed">Non è stato possibile attivare lo sblocco smart, vedi il log</string>
+    <string name="smart_association_failed">L\'auto non è stata associata come dispositivo companion</string>
+    <string name="smart_confirm_legacy_off">Il comfort entry (legacy) è attivo sul box. I due non possono essere attivi insieme: verrà spento.</string>
+    <string name="smart_legacy_turned_off">Comfort entry (legacy) spento</string>
+    <string name="smart_distances">Distanze</string>
+    <string name="smart_scale_hint">Segnale misurato da questo telefono: più il numero è basso, più sei vicino all\'auto.</string>
+    <string name="smart_thresholds_hint">Per sbloccare devi essere vicino all\'auto (mai oltre -75 dBm, qualche metro). Il blocco avviene mentre ti allontani e il telefono è ancora connesso (mai oltre -88 dBm): senza più segnale l\'auto non si può bloccare.</string>
+    <string name="smart_needs_setup_title">Sblocco smart spento</string>
+    <string name="smart_needs_setup_text">Il box ha cambiato indirizzo Bluetooth, quindi Android non lo riconosce più. Riattiva lo sblocco smart vicino all\'auto.</string>
+    <string name="smart_not_locked_title">%1$s potrebbe essere rimasta aperta</string>
+    <string name="smart_not_locked_text">La connessione si è interrotta prima che l\'auto potesse essere bloccata (ti sei allontanato in fretta, o il segnale si è perso). Controlla l\'auto, o bloccala dall\'app quando sei vicino.</string>
+    <string name="smart_live_hint">Segnale in tempo reale, letto ogni secondo mentre questa schermata è aperta: regola gli slider in base a dove ti trovi</string>
+    <string name="live_needs_connection">Il segnale in tempo reale compare qui quando l\'auto è in portata.</string>
+    <string name="smart_safety">Sicurezza</string>
+    <string name="smart_require_unlocked">Solo con il telefono sbloccato</string>
+    <string name="smart_require_unlocked_hint">Sblocca solo se il telefono non è sulla schermata di blocco: protegge dagli attacchi che ritrasmettono il segnale, ma devi tirare fuori il telefono.</string>
+    <string name="smart_cooldown">Pausa se passi solo vicino</string>
+    <string name="smart_cooldown_hint">Se passi solo vicino all\'auto, la volta dopo dovrai avvicinarti di più; dopo qualche passaggio in poco tempo lo sblocco smart si sospende (una notifica permette di riattivarlo, oppure riparte da solo dopo qualche ora).</string>
+    <string name="smart_other_mode">Altra modalità</string>
+    <string name="smart_vs_legacy">Sblocco smart: decide il telefono e si connette solo vicino all\'auto. Legacy: decide il box e il telefono resta sempre connesso. Solo uno dei due può essere attivo.</string>
+    <string name="smart_legacy_hint">Integrata nel box: misura il segnale del telefono e apre o blocca da solo, purché il telefono resti connesso</string>
+    <string name="smart_legacy_on">Comfort entry (legacy) attivo sul box</string>
+    <string name="smart_legacy_on_hint">Il box apre e blocca ancora da solo in base alla distanza. Non può funzionare insieme allo sblocco smart: disattivalo qui, oppure lo spegnerà l\'attivazione dello sblocco smart.</string>
+    <string name="smart_legacy_turn_off">Disattiva</string>
+    <string name="smart_near_connecting">Vicino all\'auto, connessione…</string>
+    <string name="smart_near_approaching">Vicino a %1$s: si sblocca quando ti avvicini</string>
+    <string name="smart_near_unlocked">%1$s sbloccata: si blocca quando ti allontani</string>
+    <string name="smart_near_waiting_phone">Vicino a %1$s: sblocca il telefono per aprire l\'auto</string>
+    <string name="smart_channel_active">Sblocco smart vicino all\'auto</string>
+    <string name="smart_channel_active_description">Mostrata solo mentre l\'auto è nelle vicinanze</string>
+    <string name="smart_channel_alerts">Avvisi dello sblocco smart</string>
+    <string name="smart_channel_alerts_description">Quando lo sblocco smart si sospende</string>
+    <string name="smart_suspended_title">Sblocco smart sospeso</string>
+    <string name="smart_suspended_text">Sei passato vicino all\'auto più volte in poco tempo, quindi per ora non viene sbloccata e bloccata in automatico. Tocca Riattiva per riaccenderlo, oppure si riattiva da solo tra qualche ora.</string>
     <string name="comfort_intro">Il box sblocca quando ti avvicini e blocca quando ti allontani, misurando il segnale di questo telefono. Funziona solo finché il telefono resta connesso.</string>
     <string name="comfort_needs_link">Il comfort entry è attivo, ma il telefono si disconnette quando chiudi l\'app: attiva Resta connesso.</string>
     <string name="comfort_reading">Leggo le impostazioni dal box…</string>
@@ -166,13 +241,13 @@
     <string name="comfort_unlock_at">Sblocca entro</string>
     <string name="comfort_lock_at">Blocca oltre</string>
     <string name="comfort_scale_hint">Intensità del segnale: più il numero è basso, più sei vicino all\'auto.</string>
-    <string name="comfort_live">Segnale in tempo reale</string>
     <string name="comfort_live_hint">Legge il segnale ogni 1,5 s mentre questa schermata è aperta</string>
     <string name="zone_unlock">Zona sblocco</string>
     <string name="zone_lock">Zona blocco</string>
     <string name="zone_between">In mezzo</string>
     <string name="keep_connected">Resta connesso</string>
     <string name="keep_connected_hint">Mantiene il collegamento con l\'app chiusa (serve al comfort entry). Consuma più batteria.</string>
+    <string name="keep_connected_smart_off">Sblocco smart spento: con il collegamento sempre attivo, Android non vede quando l\'auto arriva e se ne va.</string>
     <string name="calibrate_title">Calibra</string>
     <string name="cal_step_n">Passo %1$d di %2$d</string>
     <string name="cal_step0_title">Misura le tue distanze</string>

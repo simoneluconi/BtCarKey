@@ -14,7 +14,7 @@ from the vendor's APK. `device_secrets.json` and `logs/` are git-ignored on purp
 - Every batch ends with: `scripts\deploy.cmd -Tests` (build, unit tests, install on the phone).
   The PC can't be near the car: field tests happen later with the phone alone, so every connection
   step and command must be logged (`EventLog`: screen, logcat tag `BtCarKey`, file pulled with
-  `scripts\pull-log.cmd`). Never log key material (use `Authenticator.fingerprint`).
+  `scripts\pull-log.cmd`). Never log key material (use `KeyFingerprint.of`).
 - Ask before big designs or user-visible behaviour changes. Commit only when asked.
 
 ## Map of the code (`app/src/main/java/com/simoneluconi/btcarkey/`)
@@ -27,6 +27,7 @@ from the vendor's APK. `device_secrets.json` and `logs/` are git-ignored on purp
 | `link/` | `BoxBleManager` (Nordic BLE, driven by the protocol's GATT profile), `BoxScanner` (scans for every registered protocol), `CarKeyController` (the process-wide connection: lifecycle, reconnection, battery rules; protocol work goes through the session), `KeepConnectedService` |
 | `keys/` | `DeviceStore` (boxes and their keys: active / pending / backup per serial), `SecretStore` (Keystore AES-GCM), `KeyImportReceiver` (adb import, DUMP-protected) |
 | `settings/` | `AppSettings`: theme, accent, home buttons, confirmations, haptics, stay connected |
+| `smart/` | Smart unlock: `CompanionLink` (companion association + presence watching), `SmartPresenceService` (system presence events), `SmartEntryService` (near the car: signal sampling, unlock/lock), `SmartEntryLogic` + `Cooldown` (pure decisions, tested), `SmartEntry` (coordinator, status), `SmartNotifications`. Never on together with legacy comfort entry (the box's AUTO_LOCK) |
 | `ui/` | Screens (`HomeScreen`, `GarageScreen`, `DeviceScreen`, `ComfortScreen`, `SettingsScreen`), `App` (navigation, messages), `Components`, `AppIcons`, `theme/` |
 
 Tests: `app/src/test` runs the protocol registry and, in `protocol/ftk`, the FTK wire format, pairing

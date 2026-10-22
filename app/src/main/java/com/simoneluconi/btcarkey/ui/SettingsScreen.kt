@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,6 +57,7 @@ fun SettingsScreen() {
     val settings = app.settings
     val colors = LocalAppColors.current
     val context = LocalContext.current
+    val resources = LocalResources.current
     val theme by settings.theme.collectAsStateWithLifecycle()
     val accent by settings.accent.collectAsStateWithLifecycle()
     val actions by settings.homeActions.collectAsStateWithLifecycle()
@@ -139,9 +141,8 @@ fun SettingsScreen() {
                 icon = AppIcons.Bluetooth,
                 trailing = {
                     Toggle(keepConnected, { on ->
-                        settings.setKeepConnected(on)
                         if (on) nav.requestNotifications()
-                        app.syncKeepConnected()
+                        if (app.setKeepConnected(on)) nav.message(resources.getString(R.string.keep_connected_smart_off), MessageKind.INFO)
                     })
                 },
             )
@@ -288,11 +289,11 @@ private fun HomeActionRow(
             }
         }
         if (shown) {
-            RoundIconButton(AppIcons.Up, "Up", Modifier.alpha(if (canMoveUp) 1f else 0.3f), background = colors.surface2, size = 36.dp) {
+            RoundIconButton(AppIcons.Up, stringResource(R.string.move_up), Modifier.alpha(if (canMoveUp) 1f else 0.3f), background = colors.surface2, size = 36.dp) {
                 if (canMoveUp) onMove(-1)
             }
             Spacer(Modifier.width(6.dp))
-            RoundIconButton(AppIcons.Down, "Down", Modifier.alpha(if (canMoveDown) 1f else 0.3f), background = colors.surface2, size = 36.dp) {
+            RoundIconButton(AppIcons.Down, stringResource(R.string.move_down), Modifier.alpha(if (canMoveDown) 1f else 0.3f), background = colors.surface2, size = 36.dp) {
                 if (canMoveDown) onMove(1)
             }
             Spacer(Modifier.width(10.dp))
@@ -306,13 +307,14 @@ fun LogScreen() {
     val nav = LocalActions.current
     val colors = LocalAppColors.current
     val context = LocalContext.current
+    val resources = LocalResources.current
     val lines by EventLog.lines.collectAsStateWithLifecycle()
     val list = rememberLazyListState()
     LaunchedEffect(lines.size) { if (lines.isNotEmpty()) list.scrollToItem(lines.lastIndex) }
 
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            RoundIconButton(AppIcons.Back, "Back", onClick = nav.back)
+            RoundIconButton(AppIcons.Back, stringResource(R.string.back), onClick = nav.back)
             Spacer(Modifier.width(10.dp))
             Label(stringResource(R.string.log_title), Modifier.weight(1f), size = 24.sp, weight = FontWeight.ExtraBold)
             RoundIconButton(AppIcons.Trash, stringResource(R.string.log_clear)) { EventLog.clearScreen() }
@@ -324,7 +326,7 @@ fun LogScreen() {
                     .setType("text/plain")
                     .putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
                     .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                context.startActivity(Intent.createChooser(intent, context.getString(R.string.log_share)))
+                context.startActivity(Intent.createChooser(intent, resources.getString(R.string.log_share)))
             }
         }
         LazyColumn(

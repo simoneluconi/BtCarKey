@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
@@ -15,6 +16,7 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import com.simoneluconi.btcarkey.link.CarKeyController
+import com.simoneluconi.btcarkey.smart.CompanionLink
 import com.simoneluconi.btcarkey.ui.AppRoot
 
 /** Hosts the Compose UI and the system prompts it needs (permissions, Bluetooth, biometrics). */
@@ -32,6 +34,22 @@ class MainActivity : FragmentActivity() {
 
     private val notifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
         app.syncKeepConnected()
+    }
+
+    /** Waiting for the companion association dialog's answer (lost if the activity is recreated meanwhile). */
+    private var onAssociated: ((Boolean) -> Unit)? = null
+
+    private val association = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+        val accepted = result.resultCode == RESULT_OK
+        EventLog.log("Smart: association ${if (accepted) "accepted" else "declined"}")
+        associated(accepted)
+    }
+
+    /** The association is over: reconnect (always, even with nobody waiting), then answer. */
+    private fun associated(accepted: Boolean) {
+        app.controller.pauseForAssociation(false)
+        onAssociated?.invoke(accepted)
+        onAssociated = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,8 +71,28 @@ class MainActivity : FragmentActivity() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                 },
                 authenticate = ::authenticate,
+                associate = ::associate,
             )
         }
+    }
+
+    /**
+     * Shows the system's dialog to associate the car (smart unlock's presence events need it). The
+     * box doesn't advertise while connected, so the link is let go meanwhile for the dialog to find it.
+     */
+    private fun associate(mac: String, onResult: (Boolean) -> Unit) {
+        if (!CompanionLink.supported) return onResult(false)
+        onAssociated = onResult
+        app.controller.pauseForAssociation(true)
+        CompanionLink.associate(
+            context = this,
+            mac = mac,
+            onConfirm = { sender -> association.launch(IntentSenderRequest.Builder(sender).build()) },
+            onFailure = { error ->
+                EventLog.log("Smart: association failed ($error)")
+                associated(false)
+            },
+        )
     }
 
     /**

@@ -19,12 +19,15 @@ data class SavedDevice(
     val protocolId: String,
     /** BLE address, learnt from a scan; null until the box has been seen once. */
     val mac: String?,
-    val hasKey: Boolean,
+    /** [com.simoneluconi.btcarkey.auth.KeyFingerprint] of the active key, null without one. */
+    val keyFingerprint: String?,
     /** A key was sent but its pairing wasn't confirmed: it is tried after the active one. */
     val hasPendingKey: Boolean,
     /** The key replaced by the last pairing or import, kept in case the box still holds it. */
     val hasBackupKey: Boolean,
-)
+) {
+    val hasKey: Boolean get() = keyFingerprint != null
+}
 
 /**
  * The boxes the driver added and their keys. Names, addresses and protocols live in plain
@@ -44,6 +47,12 @@ class DeviceStore(context: Context) : KeyVault {
     private val _selected = MutableStateFlow(prefs.getString(SELECTED, null) ?: _devices.value.firstOrNull()?.serial)
     /** Serial of the box the home screen controls. */
     val selected: StateFlow<String?> = _selected.asStateFlow()
+
+    /** A known box moved to a new address: (serial, the address it had). */
+    var onMacChanged: ((String, String) -> Unit)? = null
+
+    /** A box was removed: (serial, the address it had, if any). */
+    var onRemoved: ((String, String?) -> Unit)? = null
 
     fun device(serial: String): SavedDevice? = _devices.value.firstOrNull { it.serial == serial }
 
@@ -70,17 +79,26 @@ class DeviceStore(context: Context) : KeyVault {
     }
 
     /** The address can change after a firmware update; the serial is what identifies the box. */
-    @Synchronized
     fun updateMac(serial: String, mac: String) {
-        if (serial !in serials() || prefs.getString(macKey(serial), null) == mac) return
-        prefs.edit { putString(macKey(serial), mac) }
-        EventLog.log("Devices: $serial is at $mac")
-        refresh()
+        val old = synchronized(this) {
+            val old = prefs.getString(macKey(serial), null)
+            if (serial !in serials() || old.equals(mac, ignoreCase = true)) return
+            prefs.edit { putString(macKey(serial), mac) }
+            EventLog.log("Devices: $serial is at $mac")
+            refresh()
+            old
+        }
+        if (old != null) onMacChanged?.invoke(serial, old)
     }
 
     /** Forgets the box and all its keys. The box itself keeps its key until it is reset or unbound. */
-    @Synchronized
     fun remove(serial: String) {
+        val mac = synchronized(this) { removeLocked(serial) }
+        onRemoved?.invoke(serial, mac)
+    }
+
+    private fun removeLocked(serial: String): String? {
+        val mac = prefs.getString(macKey(serial), null)
         prefs.edit(commit = true) {
             putStringSet(SERIALS, serials() - serial)
             remove(nameKey(serial))
@@ -91,6 +109,7 @@ class DeviceStore(context: Context) : KeyVault {
         EventLog.log("Devices: removed $serial and its keys")
         if (_selected.value == serial) select(serials().firstOrNull())
         refresh()
+        return mac
     }
 
     fun select(serial: String?) {
@@ -149,9 +168,10 @@ class DeviceStore(context: Context) : KeyVault {
             // Saved before protocols had ids: those are FTK boxes
             protocolId = prefs.getString(protocolKey(serial), null) ?: Protocols.default.id,
             mac = prefs.getString(macKey(serial), null),
-            hasKey = secrets.get(slotKey(serial, ACTIVE)) != null,
-            hasPendingKey = secrets.get(slotKey(serial, PENDING)) != null,
-            hasBackupKey = secrets.get(slotKey(serial, BACKUP)) != null,
+            // The one decryption per box: an unreadable active key counts as none
+            keyFingerprint = secrets.get(slotKey(serial, ACTIVE))?.let(KeyFingerprint::of),
+            hasPendingKey = secrets.contains(slotKey(serial, PENDING)),
+            hasBackupKey = secrets.contains(slotKey(serial, BACKUP)),
         )
     }.sortedBy { it.name.lowercase() }
 

@@ -84,7 +84,7 @@ class KeepConnectedService : Service() {
 
     private fun notification(text: String): Notification {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
-        return NotificationCompat.Builder(this, CHANNEL)
+        return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(text)
@@ -103,7 +103,8 @@ class KeepConnectedService : Service() {
         PendingIntent.getService(this, code, Intent(this, KeepConnectedService::class.java).setAction(name), PendingIntent.FLAG_IMMUTABLE)
 
     companion object {
-        private const val CHANNEL = "connection"
+        /** The notification's channel; Settings links to it so the driver can hide it. */
+        const val CHANNEL_ID = "connection"
         private const val NOTIFICATION_ID = 1
         private const val ACTION_LOCK = "com.simoneluconi.btcarkey.LOCK"
         private const val ACTION_UNLOCK = "com.simoneluconi.btcarkey.UNLOCK"
@@ -111,17 +112,15 @@ class KeepConnectedService : Service() {
         /**
          * Android requires a notification for a foreground service. Minimum importance keeps it out of
          * the status bar and silent; the driver can switch the channel off entirely in the system
-         * settings ([CHANNEL]), and the service keeps running.
+         * settings ([CHANNEL_ID]), and the service keeps running.
          */
         private fun createChannel(context: Context) {
-            val channel = NotificationChannel(CHANNEL, context.getString(R.string.notif_channel), NotificationManager.IMPORTANCE_MIN).apply {
+            val channel = NotificationChannel(CHANNEL_ID, context.getString(R.string.notif_channel), NotificationManager.IMPORTANCE_MIN).apply {
                 description = context.getString(R.string.notif_channel_description)
                 setShowBadge(false)
             }
             context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
-
-        const val CHANNEL_ID = CHANNEL
 
         /** Starts or stops the service; only call while the app is in the foreground (Android's rule). */
         fun sync(context: Context, enabled: Boolean) {

@@ -26,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,6 +43,7 @@ import com.simoneluconi.btcarkey.protocol.CarCommand
 import com.simoneluconi.btcarkey.protocol.Feature
 import com.simoneluconi.btcarkey.protocol.KeyProtocol
 import com.simoneluconi.btcarkey.protocol.RemoteButton
+import com.simoneluconi.btcarkey.protocol.canSmartUnlock
 import com.simoneluconi.btcarkey.settings.ActionConfig
 import com.simoneluconi.btcarkey.settings.HomeAction
 import com.simoneluconi.btcarkey.ui.theme.LocalAppColors
@@ -51,7 +52,7 @@ import com.simoneluconi.btcarkey.ui.theme.LocalAppColors
 fun HomeScreen() {
     val nav = LocalActions.current
     val app = nav.app
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val haptic = rememberHaptics()
     val state by app.controller.state.collectAsStateWithLifecycle()
     val status by app.controller.status.collectAsStateWithLifecycle()
@@ -64,16 +65,17 @@ fun HomeScreen() {
 
     LaunchedEffect(Unit) {
         app.controller.results.collect { result ->
-            val name = context.getString(commandLabel(result.command))
+            val name = resources.getString(commandLabel(result.command))
             when (result) {
                 is CommandResult.Done -> {
                     haptic(Haptic.CONFIRM)
-                    nav.message(context.getString(R.string.result_done, name), MessageKind.GOOD)
+                    nav.message(resources.getString(R.string.result_done, name), MessageKind.GOOD)
                 }
-                is CommandResult.Unconfirmed -> nav.message(context.getString(R.string.result_unconfirmed, name), MessageKind.INFO)
+                is CommandResult.Unconfirmed -> nav.message(resources.getString(R.string.result_unconfirmed, name), MessageKind.INFO)
                 is CommandResult.Failed -> {
                     haptic(Haptic.REJECT)
-                    nav.message(context.getString(R.string.result_failed, name, result.reason), MessageKind.BAD)
+                    // The reason (English, technical) is in the event log
+                    nav.message(resources.getString(R.string.result_failed, name), MessageKind.BAD)
                 }
             }
         }
@@ -98,8 +100,11 @@ fun HomeScreen() {
         val protocol = app.controller.protocolOf(device)
         ActionGrid(homeActions.filter { protocol == null || it.supportedBy(protocol) }, confirm, ready, busy)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (protocol == null || Feature.PROXIMITY in protocol.features) {
-                QuickLink(AppIcons.Radar, stringResource(R.string.comfort_title), Modifier.weight(1f)) { nav.navigate(Screen.Comfort) }
+            // Smart unlock works with any protocol that can unlock and lock; legacy comfort entry is inside it
+            if (protocol == null || protocol.canSmartUnlock) {
+                QuickLink(AppIcons.Radar, stringResource(R.string.smart_title), Modifier.weight(1f)) { nav.navigate(Screen.Smart) }
+            } else if (Feature.PROXIMITY in protocol.features) {
+                QuickLink(AppIcons.Radar, stringResource(R.string.comfort_title_legacy), Modifier.weight(1f)) { nav.navigate(Screen.Comfort) }
             }
             QuickLink(AppIcons.Fob, stringResource(R.string.device_title), Modifier.weight(1f)) { nav.navigate(Screen.Device(device.serial)) }
         }
@@ -289,7 +294,17 @@ private fun stateDetail(state: LinkState): String = when (state) {
     )
     is LinkState.Ready -> state.info.firmware?.let { stringResource(R.string.state_ready_detail_fw, state.protocol.displayName, it) }
         ?: stringResource(R.string.state_ready_detail, state.protocol.displayName)
-    is LinkState.Problem -> state.detail
+    // The technical detail goes to the event log
+    is LinkState.Problem -> stringResource(
+        when (state.kind) {
+            ProblemKind.KEY_MISSING -> R.string.problem_key_missing_detail
+            ProblemKind.KEY_REJECTED -> R.string.problem_key_rejected_detail
+            ProblemKind.PAIRING_FAILED -> R.string.problem_pairing_detail
+            ProblemKind.NOT_SUPPORTED -> R.string.problem_not_supported_detail
+            ProblemKind.NOT_FOUND -> R.string.problem_not_found_detail
+            ProblemKind.PROTOCOL -> R.string.problem_protocol_detail
+        }
+    )
     LinkState.Idle -> stringResource(R.string.state_idle_detail)
     LinkState.BluetoothOff -> stringResource(R.string.state_bluetooth_off_detail)
     LinkState.NeedsPermission -> stringResource(R.string.state_permission_detail)
@@ -313,13 +328,13 @@ private fun ActionGrid(actions: List<HomeAction>, confirm: Set<HomeAction>, read
 private fun ActionTile(action: HomeAction, needsHold: Boolean, ready: Boolean, busy: Boolean, modifier: Modifier) {
     val colors = LocalAppColors.current
     val nav = LocalActions.current
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val controller = nav.app.controller
     val configs by nav.app.settings.actionConfigs.collectAsStateWithLifecycle()
     val config = configs[action] ?: ActionConfig()
     val label = stringResource(actionLabel(action))
     val hold = action.holdButton
-    val notReady = { nav.message(context.getString(R.string.not_connected), MessageKind.INFO) }
+    val notReady = { nav.message(resources.getString(R.string.not_connected), MessageKind.INFO) }
     val run = { controller.send(action.command!!, config) }
     // Same gesture modifier whatever the link state (the state is checked inside): swapping
     // modifiers in the chain when the box connected left the tiles without their background
@@ -335,7 +350,7 @@ private fun ActionTile(action: HomeAction, needsHold: Boolean, ready: Boolean, b
             onClick = {
                 when {
                     !ready -> notReady()
-                    needsHold -> nav.message(context.getString(R.string.hold_to_confirm), MessageKind.INFO)
+                    needsHold -> nav.message(resources.getString(R.string.hold_to_confirm), MessageKind.INFO)
                     else -> run()
                 }
             },

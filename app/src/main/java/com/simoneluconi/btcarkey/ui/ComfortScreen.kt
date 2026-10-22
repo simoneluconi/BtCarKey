@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -33,13 +34,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simoneluconi.btcarkey.R
 import com.simoneluconi.btcarkey.link.LinkState
 import com.simoneluconi.btcarkey.protocol.AutoLockConfig
+import com.simoneluconi.btcarkey.smart.SmartEntry
 import com.simoneluconi.btcarkey.ui.theme.LocalAppColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 /** Thresholds in -dBm: a smaller number means closer to the car. */
-private val THRESHOLD_RANGE = 40..100
+internal val THRESHOLD_RANGE = 40..100
 
 private enum class Preset(val label: Int, val unlock: Int, val lock: Int) {
     NEAR(R.string.preset_near, 55, 65),
@@ -53,15 +55,17 @@ fun ComfortScreen() {
     val app = nav.app
     val colors = LocalAppColors.current
     val context = LocalContext.current
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     val state by app.controller.state.collectAsStateWithLifecycle()
     val keepConnected by app.settings.keepConnected.collectAsStateWithLifecycle()
+    val smartSerial by app.smart.enabledSerial.collectAsStateWithLifecycle()
     val ready = state is LinkState.Ready
+    var confirmSmartOff by remember { mutableStateOf(false) }
     var config by remember { mutableStateOf<AutoLockConfig?>(null) }
     var saved by remember { mutableStateOf<AutoLockConfig?>(null) }
     var loading by remember { mutableStateOf(false) }
     var saving by remember { mutableStateOf(false) }
-    var live by remember { mutableStateOf(false) }
     var rssi by remember { mutableStateOf<Int?>(null) }
 
     // Read once when the box is ready
@@ -74,21 +78,45 @@ fun ComfortScreen() {
         }
         loading = false
     }
-    // Live signal: polled only while switched on and this screen is open
-    LaunchedEffect(live, ready) {
-        if (!live || !ready) return@LaunchedEffect
+    // Live signal as the box measures it, next to the sliders: only while connected and this screen is open
+    LaunchedEffect(ready) {
+        rssi = null
+        if (!ready) return@LaunchedEffect
         while (isActive) {
             app.controller.readRssi().onSuccess { rssi = it }
             delay(LIVE_INTERVAL_MS)
         }
     }
 
-    ScreenScaffold(stringResource(R.string.comfort_title)) {
+    /** Writes the settings; legacy on turns smart unlock off (never both), once the box took it. */
+    fun save(target: AutoLockConfig) {
+        saving = true
+        scope.launch {
+            val result = app.controller.writeAutoLock(target)
+            saving = false
+            if (result.isSuccess) {
+                saved = target
+                if (target.enabled) SmartEntry.disable(context)
+            }
+            nav.message(
+                resources.getString(if (result.isSuccess) R.string.saved else R.string.failed),
+                if (result.isSuccess) MessageKind.GOOD else MessageKind.BAD,
+            )
+        }
+    }
+
+    ScreenScaffold(stringResource(R.string.comfort_title_legacy)) {
         Card {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(AppIcons.Radar, colors.accent)
                 Spacer(Modifier.width(12.dp))
                 Label(stringResource(R.string.comfort_intro), Modifier.weight(1f), size = 14.sp, color = colors.text2)
+            }
+            Spacer(Modifier.height(10.dp))
+            Label(stringResource(R.string.comfort_legacy_vs_smart), size = 14.sp, color = colors.text2)
+            if (smartSerial != null) {
+                Spacer(Modifier.height(8.dp))
+                Label(stringResource(R.string.comfort_smart_is_on), size = 13.sp, color = colors.warn)
             }
         }
 
@@ -99,9 +127,8 @@ fun ComfortScreen() {
                 icon = AppIcons.Bluetooth,
                 trailing = {
                     Toggle(keepConnected, { on ->
-                        app.settings.setKeepConnected(on)
                         if (on) nav.requestNotifications()
-                        app.syncKeepConnected()
+                        if (app.setKeepConnected(on)) nav.message(resources.getString(R.string.keep_connected_smart_off), MessageKind.INFO)
                     })
                 },
             )
@@ -129,6 +156,10 @@ fun ComfortScreen() {
                     )
                     Hairline()
                     Spacer(Modifier.height(12.dp))
+                    SignalMeter(rssi, current.unlockDbm, current.lockDbm)
+                    Spacer(Modifier.height(4.dp))
+                    Label(stringResource(R.string.comfort_live_hint), size = 13.sp, color = colors.text2)
+                    Spacer(Modifier.height(14.dp))
                     Label(stringResource(R.string.comfort_presets), weight = FontWeight.Bold)
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -152,57 +183,47 @@ fun ComfortScreen() {
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         PillButton(stringResource(R.string.save), icon = AppIcons.Check, style = ButtonStyle.PRIMARY,
                             enabled = current != saved && !saving) {
-                            saving = true
-                            scope.launch {
-                                val result = app.controller.writeAutoLock(current)
-                                saving = false
-                                if (result.isSuccess) saved = current
-                                nav.message(
-                                    context.getString(if (result.isSuccess) R.string.saved else R.string.failed),
-                                    if (result.isSuccess) MessageKind.GOOD else MessageKind.BAD,
-                                )
-                            }
+                            if (current.enabled && smartSerial != null) confirmSmartOff = true else save(current)
                         }
                         PillButton(stringResource(R.string.calibrate_title), icon = AppIcons.Radar) { nav.navigate(Screen.Calibrate) }
                     }
                 }
 
-                Card {
-                    SettingRow(
-                        title = stringResource(R.string.comfort_live),
-                        subtitle = stringResource(R.string.comfort_live_hint),
-                        trailing = { Toggle(live, { live = it }) },
-                    )
-                    if (live) {
-                        Spacer(Modifier.height(8.dp))
-                        SignalMeter(rssi, current)
-                    }
-                }
             }
         }
+    }
+
+    if (confirmSmartOff) {
+        ConfirmDialog(
+            title = stringResource(R.string.comfort_title_legacy),
+            message = stringResource(R.string.comfort_confirm_smart_off),
+            confirm = stringResource(R.string.comfort_confirm_switch),
+            cancel = stringResource(R.string.cancel),
+            onDismiss = { confirmSmartOff = false },
+        ) { config?.let(::save) }
     }
 }
 
 @Composable
-private fun ThresholdSlider(label: String, value: Int, onChange: (Int) -> Unit) {
+internal fun ThresholdSlider(label: String, value: Int, range: IntRange = THRESHOLD_RANGE, onChange: (Int) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Label(label, Modifier.weight(1f), color = LocalAppColors.current.text2)
         Label("-$value dBm", weight = FontWeight.Bold, tabular = true)
     }
-    ValueSlider(value, THRESHOLD_RANGE, onChange)
+    ValueSlider(value, range, onChange)
 }
 
-/** The phone's signal at the box against the two thresholds: left is near, right is far. */
+/** A signal level (-dBm) against the unlock and lock thresholds: left is near, right is far. */
 @Composable
-private fun SignalMeter(rssi: Int?, config: AutoLockConfig) {
+internal fun SignalMeter(rssi: Int?, unlockDbm: Int, lockDbm: Int) {
     val colors = LocalAppColors.current
     Row(verticalAlignment = Alignment.CenterVertically) {
         Label(rssi?.let { "-$it dBm" } ?: "…", size = 28.sp, weight = FontWeight.ExtraBold, tabular = true)
         Spacer(Modifier.width(12.dp))
         val zone = when {
             rssi == null -> ""
-            rssi <= config.unlockDbm -> stringResource(R.string.zone_unlock)
-            rssi >= config.lockDbm -> stringResource(R.string.zone_lock)
+            rssi <= unlockDbm -> stringResource(R.string.zone_unlock)
+            rssi >= lockDbm -> stringResource(R.string.zone_lock)
             else -> stringResource(R.string.zone_between)
         }
         Label(zone, color = colors.text2)
@@ -212,8 +233,8 @@ private fun SignalMeter(rssi: Int?, config: AutoLockConfig) {
         val span = (THRESHOLD_RANGE.last - THRESHOLD_RANGE.first).toFloat()
         fun x(v: Int) = maxWidth * ((v - THRESHOLD_RANGE.first) / span).coerceIn(0f, 1f)
         Box(Modifier.fillMaxWidth().height(8.dp).align(Alignment.Center).clip(CircleShape).background(colors.surface2))
-        Box(Modifier.offset(x = x(config.unlockDbm)).width(2.dp).height(22.dp).background(colors.good))
-        Box(Modifier.offset(x = x(config.lockDbm)).width(2.dp).height(22.dp).background(colors.warn))
+        Box(Modifier.offset(x = x(unlockDbm)).width(2.dp).height(22.dp).background(colors.good))
+        Box(Modifier.offset(x = x(lockDbm)).width(2.dp).height(22.dp).background(colors.warn))
         if (rssi != null) {
             Box(Modifier.offset(x = x(rssi) - 8.dp).size(16.dp).align(Alignment.CenterStart).clip(CircleShape).background(colors.accent))
         }
@@ -230,8 +251,10 @@ fun CalibrateScreen() {
     val app = nav.app
     val colors = LocalAppColors.current
     val context = LocalContext.current
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     val state by app.controller.state.collectAsStateWithLifecycle()
+    val smartSerial by app.smart.enabledSerial.collectAsStateWithLifecycle()
     val ready = state is LinkState.Ready
     var step by remember { mutableIntStateOf(0) }
     var measuring by remember { mutableStateOf(false) }
@@ -287,11 +310,16 @@ fun CalibrateScreen() {
                 Hairline()
                 InfoRow(stringResource(R.string.comfort_lock_at), "-${result.lockDbm} dBm")
             }
+            if (smartSerial != null) {
+                Label(stringResource(R.string.comfort_confirm_smart_off), size = 13.sp, color = colors.warn)
+            }
             PillButton(stringResource(R.string.cal_apply), icon = AppIcons.Check, style = ButtonStyle.PRIMARY) {
                 scope.launch {
                     val written = app.controller.writeAutoLock(result)
+                    // Legacy comfort entry and smart unlock are never on together
+                    if (written.isSuccess && result.enabled) SmartEntry.disable(context)
                     nav.message(
-                        context.getString(if (written.isSuccess) R.string.saved else R.string.failed),
+                        resources.getString(if (written.isSuccess) R.string.saved else R.string.failed),
                         if (written.isSuccess) MessageKind.GOOD else MessageKind.BAD,
                     )
                     if (written.isSuccess) nav.back()

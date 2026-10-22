@@ -40,6 +40,9 @@ interface KeyProtocol {
     fun newSession(context: SessionContext): ProtocolSession
 }
 
+/** Smart unlock needs both directions: unlock on arrival, lock on the way out. */
+val KeyProtocol.canSmartUnlock: Boolean get() = CarCommand.UNLOCK in commands && CarCommand.LOCK in commands
+
 /** What a protocol can do besides the one-tap [KeyProtocol.commands]. */
 enum class Feature {
     /** The remote's buttons pressed and released on demand ([KeyProtocol.buttons]). */

@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -109,6 +110,7 @@ fun AddDeviceScreen() {
     val app = nav.app
     val colors = LocalAppColors.current
     val context = LocalContext.current
+    val resources = LocalResources.current
     val found = remember { mutableStateMapOf<String, FoundBox>() }
     var scanning by remember { mutableStateOf(false) }
     var round by remember { mutableIntStateOf(0) }
@@ -178,7 +180,7 @@ fun AddDeviceScreen() {
             val serial = existing?.serial ?: box.serial
             app.store.add(serial, name, box.mac, box.protocol.id)
             app.controller.use(serial)
-            nav.message(context.getString(R.string.add_saved, name.ifBlank { serial }), MessageKind.GOOD)
+            nav.message(resources.getString(R.string.add_saved, name.ifBlank { serial }), MessageKind.GOOD)
             nav.back()
         }
     }
@@ -187,7 +189,7 @@ fun AddDeviceScreen() {
             app.store.add(serial, name, null, protocol.id)
             app.store.importKey(serial, key)
             app.controller.use(serial)
-            nav.message(context.getString(R.string.key_imported), MessageKind.GOOD)
+            nav.message(resources.getString(R.string.key_imported), MessageKind.GOOD)
             nav.back()
         }
     }

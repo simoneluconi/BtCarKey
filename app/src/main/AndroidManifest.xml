@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
         android:required="true" />
+    <!-- Smart unlock: the system reports the car in range (Android 12+); the rest works without it -->
+    <uses-feature
+        android:name="android.software.companion_device_setup"
+        android:required="false" />
 
     <!-- Android 12+: find and connect to the box; scanning never derives location -->
     <uses-permission
@@ -25,6 +30,12 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Smart unlock: presence events for the associated car, and starting its service at that moment -->
+    <uses-permission android:name="android.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE" />
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND" />
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND" />
+    <!-- Smart unlock: the CPU stays awake only during a visit near the car, so the lock is never late -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".BtCarKeyApp"
@@ -49,6 +60,27 @@
             android:name=".link.KeepConnectedService"
             android:exported="false"
             android:foregroundServiceType="connectedDevice" />
+
+        <!-- Smart unlock: bound by the system while the associated car is in range (Android 12+ only) -->
+        <service
+            android:name=".smart.SmartPresenceService"
+            android:exported="true"
+            android:permission="android.permission.BIND_COMPANION_DEVICE_SERVICE"
+            tools:targetApi="31">
+            <intent-filter>
+                <action android:name="android.companion.CompanionDeviceService" />
+            </intent-filter>
+        </service>
+
+        <!-- Smart unlock: measures the signal and acts while the car is in range -->
+        <service
+            android:name=".smart.SmartEntryService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+
+        <receiver
+            android:name=".smart.SmartActionReceiver"
+            android:exported="false" />
 
         <!-- Key import from the PC over adb: only the shell (DUMP) can send it -->
         <receiver

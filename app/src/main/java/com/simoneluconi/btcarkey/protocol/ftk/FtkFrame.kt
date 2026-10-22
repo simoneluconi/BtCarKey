@@ -31,9 +31,6 @@ class Frame(
     /** False when a checksum didn't match: kept and logged, the official app doesn't check them either. */
     val checksumsOk: Boolean = true,
 ) {
-    /** An answer to one of our requests (as opposed to a frame the device sends on its own). */
-    val isResponse: Boolean get() = type == TYPE_RESPONSE
-
     /** First 4 payload bytes as the uint32 errorCode most answers carry, -1 when too short. */
     val errorCode: Long get() = if (payload.size >= 4) payload.u32(0) else -1L
 

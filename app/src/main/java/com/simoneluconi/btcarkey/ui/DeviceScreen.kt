@@ -1,6 +1,5 @@
 package com.simoneluconi.btcarkey.ui
 
-import android.app.Activity
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
@@ -10,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PersistableBundle
 import android.view.WindowManager
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +27,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -35,7 +36,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simoneluconi.btcarkey.EventLog
 import com.simoneluconi.btcarkey.R
-import com.simoneluconi.btcarkey.auth.KeyFingerprint
 import com.simoneluconi.btcarkey.link.LinkState
 import com.simoneluconi.btcarkey.protocol.Feature
 import com.simoneluconi.btcarkey.protocol.Protocols
@@ -51,6 +51,7 @@ fun DeviceScreen(serial: String) {
     val app = nav.app
     val colors = LocalAppColors.current
     val context = LocalContext.current
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     val devices by app.store.devices.collectAsStateWithLifecycle()
     val selected by app.store.selected.collectAsStateWithLifecycle()
@@ -79,8 +80,11 @@ fun DeviceScreen(serial: String) {
             context.contentResolver.openOutputStream(uri)?.use { it.write(exportJson(device.name, serial, device.protocolId, key).toByteArray()) }
         }.onSuccess {
             EventLog.log("Key: exported for $serial")
-            nav.message(context.getString(R.string.key_exported), MessageKind.GOOD)
-        }.onFailure { nav.message(it.message ?: "Error", MessageKind.BAD) }
+            nav.message(resources.getString(R.string.key_exported), MessageKind.GOOD)
+        }.onFailure {
+            EventLog.log("Key: export failed (${it.javaClass.simpleName})")
+            nav.message(resources.getString(R.string.failed), MessageKind.BAD)
+        }
     }
 
     // No screenshots or recents thumbnail while the key is on screen
@@ -140,7 +144,7 @@ fun DeviceScreen(serial: String) {
                         else -> R.string.key_state_none
                     }
                 ),
-                subtitle = app.store.activeKey(serial)?.let { stringResource(R.string.key_fingerprint, KeyFingerprint.of(it)) }
+                subtitle = device.keyFingerprint?.let { stringResource(R.string.key_fingerprint, it) }
                     ?: stringResource(R.string.key_none_hint),
                 icon = AppIcons.Key,
                 iconTint = if (device.hasKey) colors.good else colors.text2,
@@ -154,7 +158,7 @@ fun DeviceScreen(serial: String) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     PillButton(stringResource(R.string.key_copy), icon = AppIcons.Copy) {
                         copySensitive(context, key.toHex())
-                        nav.message(context.getString(R.string.key_copied), MessageKind.INFO)
+                        nav.message(resources.getString(R.string.key_copied), MessageKind.INFO)
                     }
                     PillButton(stringResource(R.string.key_hide), icon = AppIcons.Close) { revealed = null }
                 }
@@ -163,7 +167,7 @@ fun DeviceScreen(serial: String) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (device.hasKey && key == null) {
                     PillButton(stringResource(R.string.key_show), icon = AppIcons.Eye) {
-                        nav.authenticate(context.getString(R.string.key_show)) {
+                        nav.authenticate(resources.getString(R.string.key_show)) {
                             revealed = app.store.activeKey(serial)
                             EventLog.log("Key: shown for $serial")
                         }
@@ -171,7 +175,7 @@ fun DeviceScreen(serial: String) {
                 }
                 if (device.hasKey) {
                     PillButton(stringResource(R.string.key_export), icon = AppIcons.Share) {
-                        nav.authenticate(context.getString(R.string.key_export)) {
+                        nav.authenticate(resources.getString(R.string.key_export)) {
                             exportFile.launch("btcarkey-${device.name.replace(Regex("[^A-Za-z0-9]+"), "-").trim('-')}.json")
                         }
                     }
@@ -179,7 +183,7 @@ fun DeviceScreen(serial: String) {
             }
             Spacer(Modifier.height(10.dp))
             PillButton(stringResource(if (device.hasKey) R.string.key_replace else R.string.key_import), icon = AppIcons.Import) {
-                if (device.hasKey) nav.authenticate(context.getString(R.string.key_replace)) { importing = true } else importing = true
+                if (device.hasKey) nav.authenticate(resources.getString(R.string.key_replace)) { importing = true } else importing = true
             }
             if (device.hasBackupKey) {
                 Spacer(Modifier.height(8.dp))
@@ -205,7 +209,7 @@ fun DeviceScreen(serial: String) {
                         scope.launch {
                             val result = app.controller.setPlate(plate.trim())
                             working = false
-                            nav.message(context.getString(if (result.isSuccess) R.string.saved else R.string.failed), if (result.isSuccess) MessageKind.GOOD else MessageKind.BAD)
+                            nav.message(resources.getString(if (result.isSuccess) R.string.saved else R.string.failed), if (result.isSuccess) MessageKind.GOOD else MessageKind.BAD)
                         }
                     }
                     Spacer(Modifier.height(10.dp))
@@ -223,7 +227,7 @@ fun DeviceScreen(serial: String) {
                                     val result = app.controller.registerNfc(NFC_SECONDS)
                                     nfcRunning = false
                                     nav.message(
-                                        context.getString(if (result.isSuccess) R.string.nfc_done else R.string.nfc_failed),
+                                        resources.getString(if (result.isSuccess) R.string.nfc_done else R.string.nfc_failed),
                                         if (result.isSuccess) MessageKind.GOOD else MessageKind.BAD,
                                     )
                                 }
@@ -260,7 +264,7 @@ fun DeviceScreen(serial: String) {
         ImportKeyDialog(serial = serial, keySize = protocol?.keySize ?: Protocols.default.keySize, onDismiss = { importing = false }) { _, _, key, _ ->
             app.store.importKey(serial, key)
             revealed = null
-            nav.message(context.getString(R.string.key_imported), MessageKind.GOOD)
+            nav.message(resources.getString(R.string.key_imported), MessageKind.GOOD)
             app.controller.retry()
         }
     }
@@ -273,7 +277,7 @@ fun DeviceScreen(serial: String) {
             danger = true,
             onDismiss = { removing = false },
         ) {
-            nav.authenticate(context.getString(R.string.device_remove)) {
+            nav.authenticate(resources.getString(R.string.device_remove)) {
                 app.store.remove(serial)
                 nav.back()
             }
@@ -288,11 +292,11 @@ fun DeviceScreen(serial: String) {
             danger = true,
             onDismiss = { repairing = false },
         ) {
-            nav.authenticate(context.getString(R.string.repair_title)) {
+            nav.authenticate(resources.getString(R.string.repair_title)) {
                 scope.launch {
                     val result = app.controller.repair()
                     nav.message(
-                        context.getString(if (result.isSuccess) R.string.repair_done else R.string.repair_failed),
+                        resources.getString(if (result.isSuccess) R.string.repair_done else R.string.repair_failed),
                         if (result.isSuccess) MessageKind.GOOD else MessageKind.BAD,
                     )
                 }
@@ -306,7 +310,7 @@ fun DeviceScreen(serial: String) {
 private fun AdvancedConfigCard(kinds: Set<RawConfigKind>, enabled: Boolean) {
     val nav = LocalActions.current
     val colors = LocalAppColors.current
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     val offered = RawConfigKind.entries.filter { it in kinds }
     var target by remember { mutableStateOf(offered.first()) }
@@ -344,7 +348,7 @@ private fun AdvancedConfigCard(kinds: Set<RawConfigKind>, enabled: Boolean) {
             scope.launch {
                 val result = nav.app.controller.writeRawConfig(target, bytes)
                 nav.message(
-                    result.exceptionOrNull()?.message ?: context.getString(R.string.saved),
+                    resources.getString(if (result.isSuccess) R.string.saved else R.string.failed),
                     if (result.isSuccess) MessageKind.GOOD else MessageKind.BAD,
                 )
             }
@@ -354,7 +358,7 @@ private fun AdvancedConfigCard(kinds: Set<RawConfigKind>, enabled: Boolean) {
 
 @Composable
 private fun SecureWindow() {
-    val activity = LocalContext.current as? Activity ?: return
+    val activity = LocalActivity.current ?: return
     DisposableEffect(activity) {
         activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         onDispose { activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }

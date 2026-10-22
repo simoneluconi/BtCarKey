@@ -20,6 +20,13 @@ import javax.crypto.spec.GCMParameterSpec
 class SecretStore(context: Context, name: String) {
     private val prefs = context.applicationContext.getSharedPreferences("secrets_$name", Context.MODE_PRIVATE)
 
+    /** The Keystore key, looked up once: it never changes for the life of the process. */
+    @Volatile
+    private var cached: SecretKey? = null
+
+    /** Whether a value is stored, without decrypting it (it may still turn out unreadable). */
+    fun contains(key: String): Boolean = prefs.contains(key)
+
     fun get(key: String): ByteArray? {
         val stored = prefs.getString(key, null) ?: return null
         return runCatching {
@@ -42,7 +49,9 @@ class SecretStore(context: Context, name: String) {
         prefs.edit(commit = true) { putString(key, Base64.encodeToString(out, Base64.NO_WRAP)) }
     }
 
-    private fun key(): SecretKey {
+    private fun key(): SecretKey = cached ?: synchronized(this) { cached ?: loadKey().also { cached = it } }
+
+    private fun loadKey(): SecretKey {
         val store = KeyStore.getInstance(KEYSTORE).apply { load(null) }
         (store.getEntry(ALIAS, null) as? KeyStore.SecretKeyEntry)?.let { return it.secretKey }
         val generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, KEYSTORE)

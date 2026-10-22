@@ -37,6 +37,8 @@ data class AppColors(
     val good: Color,
     val warn: Color,
     val bad: Color,
+    /** A switch's knob, on the track whatever its color. */
+    val knob: Color,
     val dark: Boolean,
 ) {
     /** Readable content on [accent]. */
@@ -59,6 +61,7 @@ private val Day = AppColors(
     good = Color(0xFF1E8E3E),
     warn = Color(0xFFB26A00),
     bad = Color(0xFFC62828),
+    knob = Color(0xFFFFFFFF),
     dark = false,
 )
 
@@ -73,6 +76,7 @@ private val Night = AppColors(
     good = Color(0xFF6FD08C),
     warn = Color(0xFFFFB74D),
     bad = Color(0xFFFF7A7A),
+    knob = Color(0xFFF3F5F8),
     dark = true,
 )
 

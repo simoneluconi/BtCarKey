@@ -42,11 +42,13 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simoneluconi.btcarkey.BtCarKeyApp
+import com.simoneluconi.btcarkey.R
 import com.simoneluconi.btcarkey.ui.theme.AppTheme
 import com.simoneluconi.btcarkey.ui.theme.LocalAppColors
 import kotlinx.coroutines.delay
@@ -58,6 +60,7 @@ sealed interface Screen {
     data object AddDevice : Screen
     data class Device(val serial: String) : Screen
     data object Comfort : Screen
+    data object Smart : Screen
     data object Calibrate : Screen
     data object Settings : Screen
     data object Log : Screen
@@ -74,6 +77,8 @@ class AppActions(
     val requestNotifications: () -> Unit,
     /** Fingerprint or the phone's PIN, then [onSuccess]. */
     val authenticate: (title: String, onSuccess: () -> Unit) -> Unit,
+    /** The system's companion association dialog for the device at a MAC; true when the driver accepted. */
+    val associate: (mac: String, onResult: (Boolean) -> Unit) -> Unit,
 )
 
 enum class MessageKind { INFO, GOOD, BAD }
@@ -92,6 +97,7 @@ fun AppRoot(
     enableBluetooth: () -> Unit,
     requestNotifications: () -> Unit,
     authenticate: (String, () -> Unit) -> Unit,
+    associate: (String, (Boolean) -> Unit) -> Unit,
 ) {
     val theme by app.settings.theme.collectAsStateWithLifecycle()
     val accent by app.settings.accent.collectAsStateWithLifecycle()
@@ -122,6 +128,7 @@ fun AppRoot(
             enableBluetooth = enableBluetooth,
             requestNotifications = requestNotifications,
             authenticate = authenticate,
+            associate = associate,
         )
     }
 
@@ -148,6 +155,7 @@ fun AppRoot(
                             Screen.AddDevice -> AddDeviceScreen()
                             is Screen.Device -> DeviceScreen(screen.serial)
                             Screen.Comfort -> ComfortScreen()
+                            Screen.Smart -> SmartScreen()
                             Screen.Calibrate -> CalibrateScreen()
                             Screen.Settings -> SettingsScreen()
                             Screen.Log -> LogScreen()
@@ -211,7 +219,7 @@ fun ScreenScaffold(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (showBack) {
-                RoundIconButton(AppIcons.Back, label = "Back", onClick = nav.back)
+                RoundIconButton(AppIcons.Back, label = stringResource(R.string.back), onClick = nav.back)
                 Spacer(Modifier.width(10.dp))
             }
             Label(title, Modifier.weight(1f), size = 24.sp, weight = FontWeight.ExtraBold, maxLines = 1)

@@ -81,11 +81,6 @@ object AppIcons {
     val Info = icon(circle(12f, 12f, 9f), "M12 11v5", circle(12f, 8f, 0.4f))
     val Warning = icon("M12 3.5L21.5 20h-19z", "M12 10v4.5", circle(12f, 17.2f, 0.4f))
     val Eye = icon("M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z", circle(12f, 12f, 3f))
-    val Sun = icon(
-        circle(12f, 12f, 4f),
-        "M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4",
-    )
-    val Moon = icon("M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z")
     val Tool = icon("M14.5 6.5a4 4 0 0 0 5 5l-8 8a2.1 2.1 0 0 1-3-3z", "M14.5 6.5L17 4l3 3-2.5 2.5")
 
     private fun circle(cx: Float, cy: Float, r: Float) =
