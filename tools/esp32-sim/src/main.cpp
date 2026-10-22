@@ -14,6 +14,7 @@
 #include <NimBLEDevice.h>
 #include <Preferences.h>
 #include <Update.h>
+#include <esp_bt.h>
 #include <esp_ota_ops.h>
 #include <esp_system.h>
 #include <mbedtls/aes.h>
@@ -729,6 +730,40 @@ class DataCallbacks : public NimBLECharacteristicCallbacks {
 static ServerCallbacks serverCallbacks;
 static DataCallbacks dataCallbacks;
 
+// ---------------------------------------------------------------------------------------------
+// Distance: the phone measures the signal itself, so the console makes the box look nearer or
+// further by changing its transmit power, or gone altogether by going silent ("away")
+// ---------------------------------------------------------------------------------------------
+
+/** millis() at which "away" ends; 0 when not away. */
+static uint32_t awayUntil = 0;
+
+static bool isAway() { return awayUntil != 0; }
+
+/** Classic ESP32: -12 to +9 dBm in 3 dB steps (ESP_PWR_LVL_N12 = 0 ... ESP_PWR_LVL_P9 = 7). */
+static bool setTxPower(long dbm) {
+  if (dbm < -12 || dbm > 9 || (dbm + 12) % 3 != 0) return false;
+  auto level = (esp_power_level_t)((dbm + 12) / 3);
+  // NimBLE's own setter first, then every power type the controller has (the connection in progress has its own)
+  bool nimble = NimBLEDevice::setPower(dbm);
+  int failed = 0;
+  for (int t = ESP_BLE_PWR_TYPE_CONN_HDL0; t <= ESP_BLE_PWR_TYPE_DEFAULT; t++) {
+    if (esp_ble_tx_power_set((esp_ble_power_type_t)t, level) != ESP_OK) failed++;
+  }
+  logf("   tx power: NimBLE %s, %d controller setting(s) refused", nimble ? "ok" : "refused", failed);
+  return true;
+}
+
+/** What setTxPower last set (the per-connection settings read back as invalid while nobody is connected). */
+static int txPowerDbm() { return (int)esp_ble_tx_power_get(ESP_BLE_PWR_TYPE_ADV) * 3 - 12; }
+
+static void serviceAway() {
+  if (!isAway() || (int32_t)(millis() - awayUntil) < 0) return;
+  awayUntil = 0;
+  logf("away: back in range, advertising again");
+  NimBLEDevice::startAdvertising();
+}
+
 static void resetSession() {
   authenticated = false;
   nfcWait.active = false;
@@ -745,8 +780,12 @@ static void processEvents() {
         break;
       case EventKind::Disconnect:
         resetSession();
-        logf("BLE disconnected (reason 0x%x), advertising again", e.arg);
-        NimBLEDevice::startAdvertising();
+        if (isAway()) {
+          logf("BLE disconnected (reason 0x%x), staying silent (away)", e.arg);
+        } else {
+          logf("BLE disconnected (reason 0x%x), advertising again", e.arg);
+          NimBLEDevice::startAdvertising();
+        }
         break;
       case EventKind::Mtu: logf("BLE MTU = %d (notifications up to %d bytes)", e.arg, e.arg - 3); break;
       case EventKind::Subscribe:
@@ -877,6 +916,9 @@ static void printHelp() {
       "  silent on|off        don't answer SYSTEM_CTRL (app sees 'sent, unconfirmed')\n"
       "  dropset on|off       store the next SET_DEVICE_KEY but drop its answer\n"
       "  kick                 disconnect the central\n"
+      "  tx <dBm>             transmit power, -12..9 in steps of 3: lower looks further to the phone\n"
+      "  away <seconds>       out of range: disconnect and stop advertising for a while\n"
+      "  back                 end 'away' now\n"
       "  serial <12 hex>      change the advertised serial (persisted), e.g. serial 5A114D000001\n"
       "  reboot               restart the ESP32\n"
       "  ota <size> <md5> [baud]  receive a new firmware over this port (used by flash.ps1)");
@@ -890,8 +932,11 @@ static void printStatus() {
   if (store.hasKey) logf("        device key %s (TEST DEVICE: printed on purpose)", hex(store.key, 16, "").c_str());
   if (connected())
     logf("        connected, handle %u, MTU %u, RSSI %s%d dBm", connHandle, connMtu, haveRssi ? "" : "? ", rssi);
+  else if (isAway())
+    logf("        away (silent) for %lu more s", (unsigned long)((awayUntil - millis()) / 1000));
   else
     logf("        not connected (advertising)");
+  logf("        tx power %d dBm", txPowerDbm());
   logf("        battery %u%% (%u mV), auto-lock en=%u lock=-%u unlock=-%u, silent=%s, dropset=%s", battery,
        voltageMv(), store.autoLock[0], rdU16(store.autoLock + 1), rdU16(store.autoLock + 3),
        switches.silent ? "on" : "off", switches.dropNextSetAnswer ? "armed" : "off");
@@ -958,6 +1003,21 @@ static void handleConsoleLine(String line) {
     if (!connected()) return logf("kick: no central connected");
     logf("console: disconnecting the central");
     server->disconnect(connHandle);
+  } else if (word == "tx") {
+    if (arg.isEmpty() || !setTxPower(arg.toInt())) return logf("usage: tx <-12|-9|-6|-3|0|3|6|9> (dBm)");
+    logf("console: tx power %d dBm", txPowerDbm());
+  } else if (word == "away") {
+    long seconds = arg.toInt();
+    if (seconds <= 0 || seconds > 3600) return logf("usage: away <1-3600 seconds>");
+    awayUntil = millis() + (uint32_t)seconds * 1000;
+    if (awayUntil == 0) awayUntil = 1;
+    NimBLEDevice::stopAdvertising();
+    logf("console: away for %ld s (silent, no advertising)", seconds);
+    if (connected()) server->disconnect(connHandle);
+  } else if (word == "back") {
+    if (!isAway()) return logf("back: not away");
+    awayUntil = millis();
+    serviceAway();
   } else if (word == "serial") {
     uint8_t s[6];
     if (!parseHex6(arg, s)) return logf("usage: serial <12 hex digits>, e.g. serial 5A114D000001");
@@ -1042,6 +1102,7 @@ void setup() {
 void loop() {
   processEvents();
   serviceNfcWait();
+  serviceAway();
   serviceConsole();
   serviceLed();
   delay(2);

@@ -100,6 +100,9 @@ python sim_serial.py monitor --port COM7 --seconds 10 --send "status"
 | `silent on\|off` | don't answer SYSTEM_CTRL commands (tests the app's "sent, unconfirmed" path) |
 | `dropset on\|off` | store the next SET_DEVICE_KEY but drop its answer (tests pending-key recovery) |
 | `kick` | disconnect the central |
+| `tx <dBm>` | transmit power, -12 to 9 in steps of 3 (resets to 9 on reboot). The phone measures the signal itself, so a lower power looks further away: about 15 dB of swing, enough to cross smart unlock's thresholds from a fixed spot |
+| `away <seconds>` | out of range: disconnect and stop advertising for a while (the phone sees the car leave) |
+| `back` | end `away` now |
 | `serial <12 hex>` | change the advertised serial, persisted (`serial 5A114D000001`) |
 | `reboot` | restart the ESP32 |
 | `ota <size> <md5> [baud]` | receive a firmware image over the console (used by `sim_serial.py`) |
