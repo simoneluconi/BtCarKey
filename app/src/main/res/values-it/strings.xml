@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Generic -->
+    <string name="save">Salva</string>
+    <string name="saved">Salvato</string>
+    <string name="failed">Non riuscito</string>
+    <string name="cancel">Annulla</string>
+    <string name="remove">Elimina</string>
+    <string name="yes">Sì</string>
+    <string name="no">No</string>
+
+    <!-- Home -->
+    <string name="home_your_car">La tua auto</string>
+    <string name="welcome_title">Aggiungi il tuo box</string>
+    <string name="welcome_text">Mettiti vicino all\'auto con il Bluetooth acceso. L\'app trova il box, si abbina e ne ricorda la chiave su questo telefono, cifrata.</string>
+    <string name="not_connected">Non ancora connesso al box</string>
+    <string name="hold_to_confirm">Tieni premuto per confermare</string>
+    <string name="hint_long_press">Tieni premuto</string>
+    <string name="hint_hold_button">Attivo finché tieni premuto</string>
+    <string name="result_done">%1$s: fatto</string>
+    <string name="result_unconfirmed">%1$s: inviato, nessuna conferma dal box</string>
+    <string name="result_failed">%1$s non riuscito: %2$s</string>
+
+    <!-- Actions -->
+    <string name="action_unlock">Sblocca</string>
+    <string name="action_lock">Blocca</string>
+    <string name="action_trunk">Bagagliaio</string>
+    <string name="action_remote_start">Avvia motore</string>
+    <string name="action_windows">Abbassa finestrini</string>
+    <string name="action_hold_unlock">Sblocca (premuto)</string>
+    <string name="action_hold_lock">Blocca (premuto)</string>
+    <string name="action_hold_trunk">Bagagliaio (premuto)</string>
+    <string name="action_hold_function">Funzione (premuto)</string>
+    <string name="action_grant">Consenti l\'accesso Bluetooth</string>
+    <string name="action_turn_on_bt">Attiva il Bluetooth</string>
+    <string name="action_retry">Riprova</string>
+
+    <!-- Connection state -->
+    <string name="state_no_device">Nessun box</string>
+    <string name="state_idle">In pausa</string>
+    <string name="state_idle_detail">Si connette quando apri l\'app</string>
+    <string name="state_bluetooth_off">Bluetooth spento</string>
+    <string name="state_bluetooth_off_detail">Attivalo per raggiungere l\'auto</string>
+    <string name="state_permission">Serve l\'accesso Bluetooth</string>
+    <string name="state_permission_detail">L\'app ne ha bisogno per trovare il box e connettersi</string>
+    <string name="state_locating">Cerco il box</string>
+    <string name="state_locating_detail">Breve scansione per trovarne l\'indirizzo</string>
+    <string name="state_connecting">Connessione</string>
+    <string name="state_connecting_detail">Provo a raggiungere il box…</string>
+    <string name="state_waiting">In attesa dell\'auto</string>
+    <string name="state_waiting_detail">Si connette da solo quando ti avvicini</string>
+    <string name="state_authenticating">Verifica</string>
+    <string name="state_ready">Pronto</string>
+    <string name="state_ready_detail">Connesso · %1$s</string>
+    <string name="state_ready_detail_fw">Connesso · %1$s · firmware %2$s</string>
+    <string name="state_new_pairing">Abbinato: una nuova chiave è stata impostata e salvata su questo telefono.</string>
+    <string name="auth_hello">Chiedo al box chi è</string>
+    <string name="auth_verifying">Riuso la chiave salvata</string>
+    <string name="auth_pairing">Box nuovo: abbino una nuova chiave</string>
+    <string name="auth_unbinding">Rimuovo la vecchia chiave</string>
+    <string name="step_search">Ricerca</string>
+    <string name="step_connect">Connessione</string>
+    <string name="step_verify">Verifica</string>
+    <string name="step_ready">Pronto</string>
+    <string name="problem_key_missing">Serve la chiave</string>
+    <string name="problem_key_rejected">Chiave rifiutata</string>
+    <string name="problem_pairing">Abbinamento non riuscito</string>
+    <string name="problem_not_supported">Box non supportato</string>
+    <string name="problem_not_found">Box non trovato</string>
+    <string name="problem_protocol">Problema di comunicazione</string>
+
+    <!-- Garage -->
+    <string name="garage_title">I tuoi box</string>
+    <string name="garage_empty">Nessun box salvato.</string>
+    <string name="garage_add">Aggiungi un box</string>
+    <string name="add_title">Aggiungi un box</string>
+    <string name="add_hint">Mettiti vicino all\'auto. I box nelle vicinanze compaiono qui sotto: scegli il tuo e dagli un nome.</string>
+    <string name="add_nearby">Nelle vicinanze</string>
+    <string name="add_scanning">Ricerca…</string>
+    <string name="add_scan_done">%1$d trovati</string>
+    <string name="add_scan_again">Cerca di nuovo</string>
+    <string name="add_unnamed_box">Box auto</string>
+    <string name="add_already_saved">salvato</string>
+    <string name="add_name_title">Dai un nome all\'auto</string>
+    <string name="add_name_placeholder">es. La mia auto</string>
+    <string name="add_saved">%1$s salvato</string>
+    <string name="add_with_key">Hai già la sua chiave?</string>
+    <string name="add_with_key_hint">Se il box è già abbinato (per esempio con l\'app originale) e conosci la sua chiave da 16 byte, aggiungilo con la chiave e l\'app riusa l\'abbinamento.</string>
+
+    <!-- Device -->
+    <string name="device_title">Box</string>
+    <string name="device_rename">Rinomina</string>
+    <string name="device_use_this">Usa questo box</string>
+    <string name="device_info">Informazioni</string>
+    <string name="device_box">Sul box</string>
+    <string name="device_connect_for_more">Connettiti al box per vedere e modificare queste voci.</string>
+    <string name="device_remove">Elimina box</string>
+    <string name="device_remove_message">%1$s e la sua chiave verranno cancellati da questo telefono. Il box mantiene la sua chiave: per riusarlo servirà la chiave, oppure il reset del box.</string>
+    <string name="info_protocol">Protocollo</string>
+    <string name="info_protocol_unknown">Sconosciuto (%1$s)</string>
+    <string name="info_serial">Seriale</string>
+    <string name="info_address">Indirizzo</string>
+    <string name="info_firmware">Firmware</string>
+    <string name="info_type">Tipo</string>
+    <string name="info_battery">Batteria</string>
+    <string name="info_voltage">Tensione</string>
+    <string name="info_charging">In carica</string>
+    <string name="info_refresh">Aggiorna</string>
+    <string name="plate_title">Targa</string>
+    <string name="plate_placeholder">AB123CD</string>
+    <string name="nfc_title">Registra una tessera NFC</string>
+    <string name="nfc_hint">Poi avvicina la tessera al lettore per 10 secondi</string>
+    <string name="nfc_running">Avvicina ora la tessera al lettore…</string>
+    <string name="nfc_done">Tessera registrata</string>
+    <string name="nfc_failed">Nessuna tessera registrata</string>
+    <string name="repair_title">Abbina di nuovo con una nuova chiave</string>
+    <string name="repair_hint">Rimuove la chiave attuale dal box e ne imposta una nuova</string>
+    <string name="repair_message">Il box dimentica la chiave attuale: ogni altro telefono o app che la usa smette di funzionare. Una nuova chiave casuale viene impostata e salvata qui.</string>
+    <string name="repair_confirm">Abbina di nuovo</string>
+    <string name="repair_done">Nuova chiave impostata</string>
+    <string name="repair_failed">Abbinamento non riuscito, vedi il log</string>
+    <string name="advanced_title">Configurazione avanzata</string>
+    <string name="advanced_hint">Impostazioni grezze del produttore (cosa fanno anche blocco, sblocco e avviamento, modello d\'auto). L\'app originale le scarica dal suo server: invia solo valori che sai essere giusti per la tua auto.</string>
+    <string name="advanced_placeholder">Byte esadecimali, es. 01 02 0A</string>
+    <string name="advanced_send">Invia al box</string>
+    <string name="advanced_confirm">Inviare %1$d byte al box? Valori sbagliati possono cambiare il comportamento dell\'auto.</string>
+    <string name="cfg_lock">Blocco</string>
+    <string name="cfg_unlock">Sblocco</string>
+    <string name="cfg_start">Avvio</string>
+    <string name="cfg_car">Auto</string>
+
+    <!-- Key -->
+    <string name="key_title">Chiave del dispositivo</string>
+    <string name="key_state_stored">Chiave salvata su questo telefono</string>
+    <string name="key_state_pending">Abbinamento non ancora confermato</string>
+    <string name="key_state_none">Nessuna chiave</string>
+    <string name="key_fingerprint">Impronta %1$s</string>
+    <string name="key_none_hint">Abbinata in automatico alla prima connessione, oppure importa una chiave</string>
+    <string name="key_show">Mostra chiave</string>
+    <string name="key_hide">Nascondi</string>
+    <string name="key_copy">Copia</string>
+    <string name="key_copied">Copiata, verrà rimossa dagli appunti tra un minuto</string>
+    <string name="key_export">Esporta</string>
+    <string name="key_exported">Chiave esportata</string>
+    <string name="key_import">Importa una chiave</string>
+    <string name="key_replace">Sostituisci chiave</string>
+    <string name="key_import_confirm">Importa</string>
+    <string name="key_imported">Chiave importata</string>
+    <string name="key_hex_placeholder">%1$d cifre esadecimali</string>
+    <string name="key_hex_invalid">Una chiave è di %1$d byte: %2$d cifre esadecimali</string>
+    <string name="key_import_warning">La chiave è salvata cifrata su questo telefono. Conserva le copie esportate in un posto sicuro: chi ha la chiave può aprire l\'auto.</string>
+    <string name="key_backup_kept">La chiave precedente è conservata come riserva.</string>
+    <string name="auth_prompt_subtitle">Conferma che sei tu</string>
+
+    <!-- Comfort entry -->
+    <string name="comfort_title">Comfort entry</string>
+    <string name="comfort_intro">Il box sblocca quando ti avvicini e blocca quando ti allontani, misurando il segnale di questo telefono. Funziona solo finché il telefono resta connesso.</string>
+    <string name="comfort_needs_link">Il comfort entry è attivo, ma il telefono si disconnette quando chiudi l\'app: attiva Resta connesso.</string>
+    <string name="comfort_reading">Leggo le impostazioni dal box…</string>
+    <string name="comfort_enable">Blocca e sblocca in base alla distanza</string>
+    <string name="comfort_enable_hint">Lo fa il box finché è connesso</string>
+    <string name="comfort_presets">Distanza</string>
+    <string name="preset_near">Vicino</string>
+    <string name="preset_medium">Media</string>
+    <string name="preset_far">Lontano</string>
+    <string name="comfort_unlock_at">Sblocca entro</string>
+    <string name="comfort_lock_at">Blocca oltre</string>
+    <string name="comfort_scale_hint">Intensità del segnale: più il numero è basso, più sei vicino all\'auto.</string>
+    <string name="comfort_live">Segnale in tempo reale</string>
+    <string name="comfort_live_hint">Legge il segnale ogni 1,5 s mentre questa schermata è aperta</string>
+    <string name="zone_unlock">Zona sblocco</string>
+    <string name="zone_lock">Zona blocco</string>
+    <string name="zone_between">In mezzo</string>
+    <string name="keep_connected">Resta connesso</string>
+    <string name="keep_connected_hint">Mantiene il collegamento con l\'app chiusa (serve al comfort entry). Consuma più batteria.</string>
+    <string name="calibrate_title">Calibra</string>
+    <string name="cal_step_n">Passo %1$d di %2$d</string>
+    <string name="cal_step0_title">Misura le tue distanze</string>
+    <string name="cal_step0_text">L\'app misura il segnale di questo telefono in due punti: dove l\'auto deve sbloccarsi e dove deve bloccarsi. Ogni misura dura 30 secondi.</string>
+    <string name="cal_step1_title">Mettiti accanto all\'auto</string>
+    <string name="cal_step1_text">Mettiti dove vuoi che l\'auto si sblocchi, con il telefono dove lo porti di solito, poi avvia.</string>
+    <string name="cal_step2_title">Allontanati</string>
+    <string name="cal_step2_text">Vai dove l\'auto deve bloccarsi (qualche metro più in là), poi avvia.</string>
+    <string name="cal_step3_title">Fatto</string>
+    <string name="cal_step3_text">Queste soglie vengono dalle tue misure. Applicale per attivare il comfort entry.</string>
+    <string name="cal_start">Inizia</string>
+    <string name="cal_measure">Misura qui</string>
+    <string name="cal_measuring">Misuro… %1$s</string>
+    <string name="cal_apply">Applica</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Impostazioni</string>
+    <string name="settings_appearance">Aspetto</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Chiaro</string>
+    <string name="theme_dark">Scuro</string>
+    <string name="settings_accent">Colore</string>
+    <string name="settings_buttons">Pulsanti della home</string>
+    <string name="settings_buttons_hint">Scegli i pulsanti della home e il loro ordine. Tocca la riga sotto un pulsante per passare da tocco singolo a tieni premuto.</string>
+    <string name="settings_needs_hold">Tieni premuto per inviare</string>
+    <string name="settings_single_tap">Tocco singolo</string>
+    <string name="settings_hold_short">Tieni premuto</string>
+    <string name="cfg_how">Come arriva all\'auto</string>
+    <string name="cfg_method_box">Comando del box</string>
+    <string name="cfg_method_remote">Tasto del telecomando</string>
+    <string name="cfg_method_box_hint">Il comando del box per questa azione: prova prima questo.</string>
+    <string name="cfg_button">Tasto</string>
+    <string name="cfg_presses">Pressioni</string>
+    <string name="cfg_presses_n">%1$d×</string>
+    <string name="cfg_length">Durata di ogni pressione</string>
+    <string name="cfg_remote_hint">Un tocco nell\'app: il box preme per te il tasto del telecomando, quante volte e per quanto tempo indicato qui. Per le auto che aprono il bagagliaio con una pressione lunga o un doppio clic, o abbassano i finestrini tenendo premuto lo sblocco.</string>
+    <string name="cfg_confirm_hint">Una sicurezza per le azioni che non vuoi attivare per sbaglio</string>
+    <string name="remote_unlock">Tasto sblocco</string>
+    <string name="remote_lock">Tasto blocco</string>
+    <string name="remote_trunk">Tasto bagagliaio</string>
+    <string name="remote_function">Tasto funzione</string>
+    <string name="settings_behaviour">Comportamento</string>
+    <string name="settings_haptics">Vibrazione</string>
+    <string name="settings_notification">Notifica</string>
+    <string name="settings_notification_hint">Android la richiede mentre resti connesso; puoi nasconderla da qui</string>
+    <string name="settings_more">Altro</string>
+    <string name="settings_version">Versione</string>
+    <string name="log_title">Log</string>
+    <string name="log_hint">Ogni passo di connessione e ogni comando, per la diagnosi</string>
+    <string name="log_share">Condividi il log</string>
+    <string name="log_clear">Pulisci lo schermo</string>
+
+    <!-- Notification -->
+    <string name="notif_channel">Connessione in background</string>
+    <string name="notif_channel_description">Mostrata mentre l\'app resta connessa all\'auto</string>
+    <string name="notif_starting">Avvio…</string>
+    <string name="notif_connected">Connesso a %1$s</string>
+    <string name="notif_waiting">In attesa di %1$s</string>
+    <string name="notif_problem">%1$s richiede attenzione</string>
+</resources>

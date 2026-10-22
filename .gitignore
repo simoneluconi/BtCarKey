@@ -1,0 +1,17 @@
+*.iml
+.gradle/
+.kotlin/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/app/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# Personal data: the device's key and identifiers, never published
+device_secrets*.json
+*.deviceKey.json
+# Logs pulled from the phone (they contain serials and addresses)
+/logs/

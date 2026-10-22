@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">BtCarKey</string>
+
+    <!-- Generic -->
+    <string name="save">Save</string>
+    <string name="saved">Saved</string>
+    <string name="failed">Failed</string>
+    <string name="cancel">Cancel</string>
+    <string name="remove">Remove</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <!-- Home -->
+    <string name="home_your_car">Your car</string>
+    <string name="welcome_title">Add your box</string>
+    <string name="welcome_text">Stand near the car with Bluetooth on. The app finds the box, pairs with it and remembers its key on this phone, encrypted.</string>
+    <string name="not_connected">Not connected to the box yet</string>
+    <string name="hold_to_confirm">Press and hold to confirm</string>
+    <string name="hint_long_press">Press and hold</string>
+    <string name="hint_hold_button">Held while you press</string>
+    <string name="result_done">%1$s: done</string>
+    <string name="result_unconfirmed">%1$s: sent, no confirmation from the box</string>
+    <string name="result_failed">%1$s failed: %2$s</string>
+
+    <!-- Actions -->
+    <string name="action_unlock">Unlock</string>
+    <string name="action_lock">Lock</string>
+    <string name="action_trunk">Trunk</string>
+    <string name="action_remote_start">Start engine</string>
+    <string name="action_windows">Lower windows</string>
+    <string name="action_hold_unlock">Unlock (hold)</string>
+    <string name="action_hold_lock">Lock (hold)</string>
+    <string name="action_hold_trunk">Trunk (hold)</string>
+    <string name="action_hold_function">Function (hold)</string>
+    <string name="action_grant">Allow Bluetooth access</string>
+    <string name="action_turn_on_bt">Turn on Bluetooth</string>
+    <string name="action_retry">Retry</string>
+
+    <!-- Connection state -->
+    <string name="state_no_device">No box yet</string>
+    <string name="state_idle">Idle</string>
+    <string name="state_idle_detail">Connects when the app is open</string>
+    <string name="state_bluetooth_off">Bluetooth is off</string>
+    <string name="state_bluetooth_off_detail">Turn it on to reach the car</string>
+    <string name="state_permission">Bluetooth access needed</string>
+    <string name="state_permission_detail">The app needs it to find and connect to the box</string>
+    <string name="state_locating">Looking for the box</string>
+    <string name="state_locating_detail">Short scan to find its address</string>
+    <string name="state_connecting">Connecting</string>
+    <string name="state_connecting_detail">Trying to reach the box…</string>
+    <string name="state_waiting">Waiting for the car</string>
+    <string name="state_waiting_detail">Connects by itself when you get close</string>
+    <string name="state_authenticating">Verifying</string>
+    <string name="state_ready">Ready</string>
+    <string name="state_ready_detail">Connected · %1$s</string>
+    <string name="state_ready_detail_fw">Connected · %1$s · firmware %2$s</string>
+    <string name="state_new_pairing">Paired: a new key was set and saved on this phone.</string>
+    <string name="auth_hello">Asking the box who it is</string>
+    <string name="auth_verifying">Reusing the saved key</string>
+    <string name="auth_pairing">New box: pairing a new key</string>
+    <string name="auth_unbinding">Unbinding the old key</string>
+    <string name="step_search">Search</string>
+    <string name="step_connect">Connect</string>
+    <string name="step_verify">Verify</string>
+    <string name="step_ready">Ready</string>
+    <string name="problem_key_missing">Key needed</string>
+    <string name="problem_key_rejected">Key refused</string>
+    <string name="problem_pairing">Pairing failed</string>
+    <string name="problem_not_supported">Not a supported box</string>
+    <string name="problem_not_found">Box not found</string>
+    <string name="problem_protocol">Communication problem</string>
+
+    <!-- Garage -->
+    <string name="garage_title">Your boxes</string>
+    <string name="garage_empty">No box saved yet.</string>
+    <string name="garage_add">Add a box</string>
+    <string name="add_title">Add a box</string>
+    <string name="add_hint">Stand near the car. Boxes in range appear below; pick yours and give it a name.</string>
+    <string name="add_nearby">Nearby</string>
+    <string name="add_scanning">Scanning…</string>
+    <string name="add_scan_done">%1$d found</string>
+    <string name="add_scan_again">Scan again</string>
+    <string name="add_unnamed_box">Car box</string>
+    <string name="add_already_saved">saved</string>
+    <string name="add_name_title">Name this car</string>
+    <string name="add_name_placeholder">e.g. My car</string>
+    <string name="add_saved">%1$s saved</string>
+    <string name="add_with_key">Already have its key?</string>
+    <string name="add_with_key_hint">If the box is already paired (for example with the original app) and you know its 16-byte key, add it with the key and the app reuses the pairing.</string>
+
+    <!-- Device -->
+    <string name="device_title">Box</string>
+    <string name="device_rename">Rename</string>
+    <string name="device_use_this">Use this box</string>
+    <string name="device_info">Information</string>
+    <string name="device_box">On the box</string>
+    <string name="device_connect_for_more">Connect to the box to see and change this.</string>
+    <string name="device_remove">Remove box</string>
+    <string name="device_remove_message">%1$s and its key will be deleted from this phone. The box keeps its key: to use it again you will need the key, or reset the box.</string>
+    <string name="info_protocol">Protocol</string>
+    <string name="info_protocol_unknown">Unknown (%1$s)</string>
+    <string name="info_serial">Serial</string>
+    <string name="info_address">Address</string>
+    <string name="info_firmware">Firmware</string>
+    <string name="info_type">Type</string>
+    <string name="info_battery">Battery</string>
+    <string name="info_voltage">Voltage</string>
+    <string name="info_charging">Charging</string>
+    <string name="info_refresh">Refresh</string>
+    <string name="plate_title">Licence plate</string>
+    <string name="plate_placeholder">AB123CD</string>
+    <string name="nfc_title">Register an NFC card</string>
+    <string name="nfc_hint">Then hold the card to the reader for 10 seconds</string>
+    <string name="nfc_running">Hold the card to the reader now…</string>
+    <string name="nfc_done">Card registered</string>
+    <string name="nfc_failed">No card registered</string>
+    <string name="repair_title">Pair again with a new key</string>
+    <string name="repair_hint">Removes the current key from the box and sets a new one</string>
+    <string name="repair_message">The box forgets its current key: every other phone or app using it stops working. A new random key is set and saved here.</string>
+    <string name="repair_confirm">Pair again</string>
+    <string name="repair_done">New key set</string>
+    <string name="repair_failed">Pairing failed, see the log</string>
+    <string name="advanced_title">Advanced configuration</string>
+    <string name="advanced_hint">Raw vendor settings (what lock, unlock and remote start also do, car model). The original app downloads them from its server; only send values you know are right for your car.</string>
+    <string name="advanced_placeholder">Hex bytes, e.g. 01 02 0A</string>
+    <string name="advanced_send">Send to the box</string>
+    <string name="advanced_confirm">Send %1$d bytes to the box? Wrong values can change how the car reacts.</string>
+    <string name="cfg_lock">Lock</string>
+    <string name="cfg_unlock">Unlock</string>
+    <string name="cfg_start">Start</string>
+    <string name="cfg_car">Car</string>
+
+    <!-- Key -->
+    <string name="key_title">Device key</string>
+    <string name="key_state_stored">Key saved on this phone</string>
+    <string name="key_state_pending">Pairing not confirmed yet</string>
+    <string name="key_state_none">No key</string>
+    <string name="key_fingerprint">Fingerprint %1$s</string>
+    <string name="key_none_hint">Paired automatically on the first connection, or import a key</string>
+    <string name="key_show">Show key</string>
+    <string name="key_hide">Hide</string>
+    <string name="key_copy">Copy</string>
+    <string name="key_copied">Copied, cleared from the clipboard in a minute</string>
+    <string name="key_export">Export</string>
+    <string name="key_exported">Key exported</string>
+    <string name="key_import">Import a key</string>
+    <string name="key_replace">Replace key</string>
+    <string name="key_import_confirm">Import</string>
+    <string name="key_imported">Key imported</string>
+    <string name="key_hex_placeholder">%1$d hex digits</string>
+    <string name="key_hex_invalid">A key is %1$d bytes: %2$d hex digits</string>
+    <string name="key_import_warning">The key is stored encrypted on this phone. Keep exported copies somewhere safe: whoever has the key can open the car.</string>
+    <string name="key_backup_kept">The previous key is kept as a backup.</string>
+    <string name="auth_prompt_subtitle">Confirm it\'s you</string>
+
+    <!-- Comfort entry -->
+    <string name="comfort_title">Comfort entry</string>
+    <string name="comfort_intro">The box unlocks when you come close and locks when you walk away, measuring this phone\'s signal. It only works while the phone stays connected.</string>
+    <string name="comfort_needs_link">Comfort entry is on, but the phone disconnects when the app closes: turn on Stay connected.</string>
+    <string name="comfort_reading">Reading the settings from the box…</string>
+    <string name="comfort_enable">Lock and unlock by distance</string>
+    <string name="comfort_enable_hint">Done by the box while connected</string>
+    <string name="comfort_presets">Distance</string>
+    <string name="preset_near">Near</string>
+    <string name="preset_medium">Medium</string>
+    <string name="preset_far">Far</string>
+    <string name="comfort_unlock_at">Unlock within</string>
+    <string name="comfort_lock_at">Lock beyond</string>
+    <string name="comfort_scale_hint">Signal strength: the lower the number, the closer to the car.</string>
+    <string name="comfort_live">Live signal</string>
+    <string name="comfort_live_hint">Reads the signal every 1.5 s while this screen is open</string>
+    <string name="zone_unlock">Unlock zone</string>
+    <string name="zone_lock">Lock zone</string>
+    <string name="zone_between">In between</string>
+    <string name="keep_connected">Stay connected</string>
+    <string name="keep_connected_hint">Keeps the link with the app closed (needed by comfort entry). Uses more battery.</string>
+    <string name="calibrate_title">Calibrate</string>
+    <string name="cal_step_n">Step %1$d of %2$d</string>
+    <string name="cal_step0_title">Measure your distances</string>
+    <string name="cal_step0_text">The app measures this phone\'s signal at two places: where the car should unlock and where it should lock. Each takes 30 seconds.</string>
+    <string name="cal_step1_title">Stand next to the car</string>
+    <string name="cal_step1_text">Stand where you want the car to unlock, with the phone where you usually carry it, then start.</string>
+    <string name="cal_step2_title">Walk away</string>
+    <string name="cal_step2_text">Go to where the car should lock (a few metres away), then start.</string>
+    <string name="cal_step3_title">Done</string>
+    <string name="cal_step3_text">These thresholds come from your measurements. Apply them to turn comfort entry on.</string>
+    <string name="cal_start">Start</string>
+    <string name="cal_measure">Measure here</string>
+    <string name="cal_measuring">Measuring… %1$s</string>
+    <string name="cal_apply">Apply</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="settings_accent">Accent color</string>
+    <string name="settings_buttons">Home buttons</string>
+    <string name="settings_buttons_hint">Choose the buttons on the home screen and their order. Tap the line under a button to switch between single tap and press-and-hold.</string>
+    <string name="settings_needs_hold">Press and hold to send</string>
+    <string name="settings_single_tap">Single tap</string>
+    <string name="settings_hold_short">Hold to send</string>
+    <string name="cfg_how">How it reaches the car</string>
+    <string name="cfg_method_box">Box command</string>
+    <string name="cfg_method_remote">Remote button</string>
+    <string name="cfg_method_box_hint">The box\'s own command for this action: try this first.</string>
+    <string name="cfg_button">Button</string>
+    <string name="cfg_presses">Presses</string>
+    <string name="cfg_presses_n">%1$d×</string>
+    <string name="cfg_length">Each press lasts</string>
+    <string name="cfg_remote_hint">One tap in the app: the box presses the remote\'s button for you, as many times and as long as set here. For cars that open the trunk with a long press or a double click, or lower the windows by holding unlock.</string>
+    <string name="cfg_confirm_hint">A safety for actions you don\'t want to trigger by mistake</string>
+    <string name="remote_unlock">Unlock button</string>
+    <string name="remote_lock">Lock button</string>
+    <string name="remote_trunk">Trunk button</string>
+    <string name="remote_function">Function button</string>
+    <string name="settings_behaviour">Behaviour</string>
+    <string name="settings_haptics">Vibration feedback</string>
+    <string name="settings_notification">Notification</string>
+    <string name="settings_notification_hint">Android requires it while staying connected; you can hide it here</string>
+    <string name="settings_more">More</string>
+    <string name="settings_version">Version</string>
+    <string name="log_title">Log</string>
+    <string name="log_hint">Every connection step and command, for diagnosis</string>
+    <string name="log_share">Share log</string>
+    <string name="log_clear">Clear screen</string>
+
+    <!-- Notification -->
+    <string name="notif_channel">Background connection</string>
+    <string name="notif_channel_description">Shown while the app stays connected to the car</string>
+    <string name="notif_starting">Starting…</string>
+    <string name="notif_connected">Connected to %1$s</string>
+    <string name="notif_waiting">Waiting for %1$s</string>
+    <string name="notif_problem">%1$s needs attention</string>
+</resources>
