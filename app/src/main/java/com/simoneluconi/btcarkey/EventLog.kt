@@ -24,6 +24,9 @@ object EventLog {
     /** Each file holds 512 KB; the current one and two older ones are kept. */
     private const val MAX_FILE_BYTES = 512L * 1024
     private const val KEPT_FILES = 3
+    /** Bumped when older log files must not survive (2: GATT lines without raw bytes). */
+    private const val LOG_FORMAT = 2
+    private const val FORMAT_KEY = "format"
     private val dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
     /** Where the time starts in a [dateTimeFormat] stamp: the app's log shows the time only. */
     private const val TIME_START = 11
@@ -44,7 +47,14 @@ object EventLog {
     /** Starts the file copy: files/log/events.txt. */
     fun init(context: Context) {
         if (file != null) return
-        file = File(context.filesDir, "log").apply { mkdirs() }.resolve("events.txt")
+        val dir = File(context.filesDir, "log").apply { mkdirs() }
+        // Logs written before LOG_FORMAT could hold raw GATT bytes (a device key at pairing): wiped once
+        val prefs = context.getSharedPreferences("event_log", Context.MODE_PRIVATE)
+        if (prefs.getInt(FORMAT_KEY, 0) < LOG_FORMAT) {
+            dir.listFiles()?.forEach { it.delete() }
+            prefs.edit().putInt(FORMAT_KEY, LOG_FORMAT).apply()
+        }
+        file = dir.resolve("events.txt")
     }
 
     /** The log files, oldest first, for sharing. */
@@ -85,11 +95,13 @@ object EventLog {
             writer.write(text)
             outBytes += text.length
             // Flushed as soon as no other line waits: in the file within milliseconds, a burst costs one write
-            if (queued.decrementAndGet() == 0) writer.flush()
+            if (queued.get() <= 1) writer.flush()
         } catch (_: Exception) {
-            queued.set(0)
             runCatching { out?.close() }
             out = null
+        } finally {
+            // Exactly one decrement per queued line, failure or not, so the count can't drift
+            queued.decrementAndGet()
         }
     }
 

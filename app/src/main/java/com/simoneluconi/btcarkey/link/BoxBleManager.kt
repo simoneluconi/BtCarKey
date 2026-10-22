@@ -6,8 +6,10 @@ import android.content.Context
 import android.util.Log
 import com.simoneluconi.btcarkey.EventLog
 import com.simoneluconi.btcarkey.protocol.GattProfile
+import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.ble.BleManager
 import no.nordicsemi.android.ble.ConnectionPriorityRequest
+import kotlin.coroutines.resume
 
 /**
  * GATT client for any protocol's [GattProfile]: notifications in, writes out (Write Without
@@ -28,7 +30,8 @@ class BoxBleManager(
     override fun getMinLogPriority(): Int = Log.DEBUG
 
     override fun log(priority: Int, message: String) {
-        if (priority >= Log.DEBUG) EventLog.log("GATT: $message")
+        // Never the raw bytes: a pairing write carries the device key in clear
+        if (priority >= Log.DEBUG) GattLogFilter.filter(message)?.let { EventLog.log("GATT: $it") }
     }
 
     override fun isRequiredServiceSupported(gatt: BluetoothGatt): Boolean {
@@ -81,6 +84,18 @@ class BoxBleManager(
         requestConnectionPriority(
             if (lowPower) ConnectionPriorityRequest.CONNECTION_PRIORITY_LOW_POWER else ConnectionPriorityRequest.CONNECTION_PRIORITY_BALANCED
         ).enqueue()
+    }
+
+    /** The link's signal as the phone measures it (negative dBm): a local read, no radio traffic of its own. */
+    suspend fun readLinkRssi(): Int? = suspendCancellableCoroutine { cont ->
+        if (!isReady) {
+            cont.resume(null)
+            return@suspendCancellableCoroutine
+        }
+        readRssi()
+            .with { _, rssi -> if (cont.isActive) cont.resume(rssi) }
+            .fail { _, _ -> if (cont.isActive) cont.resume(null) }
+            .enqueue()
     }
 
     /** Sends bytes. Write Without Response when possible: delivery is confirmed by the device's answer. */
