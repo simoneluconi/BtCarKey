@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BtCarKey – Lo smartphone come chiave Bluetooth dell'auto (Android, open source)</title>
+  <meta name="description" content="App Android gratuita e open source che trasforma il telefono nella chiave Bluetooth LE dell'auto: apri, chiudi, bagagliaio e apertura automatica in avvicinamento. Senza account, senza cloud, consuma pochissima batteria.">
+  <link rel="canonical" href="https://simoneluconi.github.io/BtCarKey/it/">
+  <link rel="alternate" hreflang="en" href="https://simoneluconi.github.io/BtCarKey/">
+  <link rel="alternate" hreflang="it" href="https://simoneluconi.github.io/BtCarKey/it/">
+  <link rel="alternate" hreflang="x-default" href="https://simoneluconi.github.io/BtCarKey/">
+  <meta name="theme-color" content="#0B63CE">
+  <link rel="icon" href="../icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../icon-512.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="BtCarKey">
+  <meta property="og:title" content="BtCarKey – Lo smartphone come chiave dell'auto">
+  <meta property="og:description" content="Apri, chiudi e apri il bagagliaio dal telefono, oppure lascia che l'auto si apra quando ti avvicini. Open source, senza account, senza cloud.">
+  <meta property="og:url" content="https://simoneluconi.github.io/BtCarKey/it/">
+  <meta property="og:image" content="https://simoneluconi.github.io/BtCarKey/social-preview.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:locale" content="it_IT">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "BtCarKey",
+    "description": "App Android open source che trasforma il telefono nella chiave Bluetooth LE dell'auto per i moduli keyless aftermarket: apertura, chiusura, bagagliaio, avviamento remoto e apertura automatica in avvicinamento.",
+    "operatingSystem": "Android 10+",
+    "applicationCategory": "UtilitiesApplication",
+    "url": "https://simoneluconi.github.io/BtCarKey/it/",
+    "downloadUrl": "https://github.com/simoneluconi/BtCarKey/releases",
+    "codeRepository": "https://github.com/simoneluconi/BtCarKey",
+    "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+    "inLanguage": ["it", "en"],
+    "image": "https://simoneluconi.github.io/BtCarKey/icon-512.png",
+    "screenshot": "https://simoneluconi.github.io/BtCarKey/screenshots/home.jpg",
+    "author": { "@type": "Person", "name": "Simone Luconi", "url": "https://github.com/simoneluconi" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "Posso usare il telefono come chiave dell'auto?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Sì, se sull'auto è installato un modulo keyless Bluetooth LE. BtCarKey parla direttamente con il modulo via Bluetooth Low Energy e manda gli stessi comandi del telecomando: apertura, chiusura, bagagliaio, finestrini e avviamento remoto." } },
+      { "@type": "Question", "name": "Con quali moduli funziona BtCarKey?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Oggi supporta il protocollo FTK, usato dai moduli aftermarket venduti con l'app \"redriverbear\". L'app è costruita attorno a un'interfaccia di protocollo, quindi si possono aggiungere altre chiavi Bluetooth." } },
+      { "@type": "Question", "name": "Serve una connessione Internet o un account?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. BtCarKey non chiede nemmeno il permesso Internet: niente account, niente cloud, niente tracciamento. Le chiavi restano sul telefono, cifrate con l'Android Keystore." } },
+      { "@type": "Question", "name": "Come funziona lo sblocco smart?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Android si accorge dell'auto nelle vicinanze con la sua scansione a basso consumo, anche ad app chiusa. Solo allora il telefono si collega e misura il segnale: apre quando sei vicino e chiude quando ti allontani." } },
+      { "@type": "Question", "name": "Consuma batteria?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. Niente scansioni in background e niente polling. L'attesa dell'auto è affidata al controller Bluetooth, e lo sblocco smart lavora solo nei pochi minuti in cui sei vicino all'auto." } },
+      { "@type": "Question", "name": "È gratis?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Sì. BtCarKey è gratuita e open source con licenza GNU GPL v3, senza pubblicità." } }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="./"><img src="../icon.svg" alt="" width="36" height="36">BtCarKey</a>
+      <a class="lang" href="../" hreflang="en" lang="en">English</a>
+    </header>
+
+    <main>
+      <div class="hero">
+        <div>
+          <h1>Il telefono è la chiave dell'auto.</h1>
+          <p class="lead">BtCarKey è un'app Android gratuita e open source per i moduli Bluetooth LE per auto. Apri, chiudi e apri il bagagliaio con un tocco, oppure lascia che l'auto si apra quando arrivi e si chiuda quando te ne vai. Senza account, senza cloud, leggera sulla batteria.</p>
+          <div class="ctas">
+            <span class="btn soon" title="In arrivo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5v17l9-8.5z"/><path d="M5 3.5l12.5 7L14 12"/><path d="M5 20.5l12.5-7L14 12"/></svg>
+              Google Play: in arrivo
+            </span>
+            <a class="btn primary" href="https://github.com/simoneluconi/BtCarKey">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.3 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>
+              Codice sorgente su GitHub
+            </a>
+          </div>
+          <ul class="chips">
+            <li>Android 10+</li>
+            <li>Nessun permesso Internet</li>
+            <li>GPL-3.0</li>
+            <li>Italiano · English</li>
+          </ul>
+        </div>
+        <div class="shot">
+          <picture>
+            <source srcset="../screenshots/home-dark.jpg" media="(prefers-color-scheme: dark)">
+            <img class="phone" src="../screenshots/home.jpg" width="1080" height="2160" alt="Schermata principale di BtCarKey: stato della connessione e pulsanti apri, chiudi, bagagliaio e finestrini">
+          </picture>
+        </div>
+      </div>
+
+      <section id="funzioni">
+        <h2>Tutto quello che fa il telecomando, e di più</h2>
+        <p class="sub">Scritta da zero per sostituire l'app originale del modulo, che richiede un account, interroga il modulo di continuo e scarica la batteria.</p>
+        <div class="grid">
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M6.5 11h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19.5v-7A1.5 1.5 0 0 1 6.5 11z"/><path d="M8 11V7.5a4 4 0 0 1 7.7-1.5"/><path d="M12 15v2"/></svg></div>
+            <h3>Comandi dell'auto</h3>
+            <p>Apri, chiudi, bagagliaio, abbassa i finestrini e avviamento remoto, più i tasti del telecomando tenuti premuti. I comandi delicati richiedono una pressione lunga.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5"/><path d="M8.5 15.5a5 5 0 0 1 0-7"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M5.6 18.4a9 9 0 0 1 0-12.8"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg></div>
+            <h3>Sblocco smart a mani libere</h3>
+            <p>Apre quando ti avvicini e chiude quando ti allontani, ad app chiusa. Calibrazione guidata, protezione contro i passaggi casuali, tasto pausa.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 7h13a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M22 11v2"/></svg></div>
+            <h3>Leggera sulla batteria</h3>
+            <p>Niente scansioni in background e niente polling. È il controller Bluetooth ad aspettare l'auto, mentre il telefono dorme.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l8.5-8.5"/><path d="M16 7l2 2"/><path d="M18.5 4.5l1.5 1.5"/></svg></div>
+            <h3>Le chiavi restano sul telefono</h3>
+            <p>La chiave di ogni modulo è cifrata con l'Android Keystore. Per mostrarla o esportarla servono l'impronta o il PIN.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/></svg></div>
+            <h3>Niente account, niente cloud</h3>
+            <p>L'app non chiede nemmeno il permesso Internet. Non raccoglie nulla e nulla esce dal telefono.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M5 16v-5l2-5h10l2 5v5"/><path d="M3 16h18v2H3z"/><path d="M5 11h14"/></svg></div>
+            <h3>Più auto, una sola app</h3>
+            <p>Aggiungi i moduli con una scansione o importando una chiave che conosci. Tema chiaro e scuro, colori d'accento, pulsanti della home a scelta.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="screenshot">
+        <h2>Screenshot</h2>
+        <p class="sub">Fatti su un Galaxy S25 Ultra collegato al simulatore ESP32 del progetto.</p>
+        <div class="shots">
+          <figure><img class="phone" src="../screenshots/home.jpg" width="1080" height="2160" loading="lazy" alt="Schermata principale con l'auto collegata e pronta"><figcaption>Home</figcaption></figure>
+          <figure><img class="phone" src="../screenshots/smart-unlock.jpg" width="1080" height="2160" loading="lazy" alt="Sblocco smart con il segnale in tempo reale e le soglie di apertura e chiusura"><figcaption>Sblocco smart</figcaption></figure>
+          <figure><img class="phone" src="../screenshots/settings.jpg" width="1080" height="2160" loading="lazy" alt="Impostazioni: tema, colore d'accento e pulsanti della home"><figcaption>Impostazioni</figcaption></figure>
+          <figure><img class="phone" src="../screenshots/smart-unlock-dark.jpg" width="1080" height="2160" loading="lazy" alt="Sblocco smart con il tema scuro"><figcaption>Tema scuro</figcaption></figure>
+        </div>
+      </section>
+
+      <section id="sblocco-smart">
+        <h2>Come funziona lo sblocco smart</h2>
+        <p class="sub">Accesso keyless senza telecomando in tasca e senza tenere il telefono collegato tutto il giorno.</p>
+        <ol class="steps">
+          <li>L'auto si associa una volta come <em>dispositivo companion</em>. Da lì in poi è Android stesso ad accorgersi quando arriva nel raggio, anche ad app chiusa.</li>
+          <li>Solo allora il telefono si collega e legge l'intensità del segnale, circa una volta al secondo.</li>
+          <li>Segnale forte per alcune letture di fila: l'auto si apre. Allontanandoti, sotto la soglia di chiusura: l'auto si chiude e il telefono si scollega.</li>
+          <li>Limiti di sicurezza integrati: per aprire devi essere a pochi metri, un controllo opzionale richiede il telefono sbloccato e i passaggi ripetuti sospendono lo sblocco smart.</li>
+        </ol>
+      </section>
+
+      <section id="compatibilita">
+        <h2>Compatibilità</h2>
+        <p class="sub">BtCarKey funziona con i moduli Bluetooth LE aftermarket che parlano il protocollo FTK, quelli venduti con l'app "redriverbear". Il protocollo è documentato nel repository e l'app è pensata per aggiungere altre chiavi Bluetooth. Serve Android 10 o successivo; lo sblocco smart richiede Android 12 o successivo.</p>
+      </section>
+
+      <section id="faq">
+        <h2>Domande frequenti</h2>
+        <details><summary>Posso usare il telefono come chiave dell'auto?</summary><p>Sì, se sull'auto è installato un modulo keyless Bluetooth LE. BtCarKey parla direttamente con il modulo via Bluetooth Low Energy e manda gli stessi comandi del telecomando: apertura, chiusura, bagagliaio, finestrini e avviamento remoto.</p></details>
+        <details><summary>Con quali moduli funziona BtCarKey?</summary><p>Oggi supporta il protocollo FTK, usato dai moduli aftermarket venduti con l'app "redriverbear". L'app è costruita attorno a un'interfaccia di protocollo, quindi si possono aggiungere altre chiavi Bluetooth.</p></details>
+        <details><summary>Serve una connessione Internet o un account?</summary><p>No. BtCarKey non chiede nemmeno il permesso Internet: niente account, niente cloud, niente tracciamento. Le chiavi restano sul telefono, cifrate con l'Android Keystore.</p></details>
+        <details><summary>Come funziona lo sblocco smart?</summary><p>Android si accorge dell'auto nelle vicinanze con la sua scansione a basso consumo, anche ad app chiusa. Solo allora il telefono si collega e misura il segnale: apre quando sei vicino e chiude quando ti allontani.</p></details>
+        <details><summary>Consuma batteria?</summary><p>No. Niente scansioni in background e niente polling. L'attesa dell'auto è affidata al controller Bluetooth, e lo sblocco smart lavora solo nei pochi minuti in cui sei vicino all'auto.</p></details>
+        <details><summary>È gratis?</summary><p>Sì. BtCarKey è gratuita e open source con licenza GNU GPL v3, senza pubblicità.</p></details>
+      </section>
+    </main>
+
+    <footer>
+      <p>BtCarKey di <a href="https://github.com/simoneluconi">Simone Luconi</a> · <a href="https://github.com/simoneluconi/BtCarKey">GitHub</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/simoneluconi/BtCarKey/blob/main/LICENSE">GPL-3.0</a></p>
+      <p>Usala solo con la tua auto e il tuo modulo. Questo progetto non è affiliato al produttore del modulo.</p>
+    </footer>
+  </div>
+</body>
+</html>

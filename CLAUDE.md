@@ -25,10 +25,15 @@ from the vendor's APK. `device_secrets.json` and `logs/` are git-ignored on purp
 | `protocol/ftk/` | The only protocol so far, the "redriverbear" boxes (PROTOCOL.md): `FtkProtocol` + `FtkSession`, frames (`Frame`, `FrameAssembler`), `FrameSession` (seq matching, timeouts), `FtkAuthenticator` (AUTH → verify a stored key, or pair a new random key; repair = UNBIND + new key), messages, TLVs, AES challenge |
 | `auth/` | Generic: `KeyVault`, `AuthOutcome`, `AuthStep`, `KeyFingerprint`, `Serials` |
 | `link/` | `BoxBleManager` (Nordic BLE, driven by the protocol's GATT profile), `BoxScanner` (scans for every registered protocol), `CarKeyController` (the process-wide connection: lifecycle, reconnection, battery rules; protocol work goes through the session), `KeepConnectedService` |
-| `keys/` | `DeviceStore` (boxes and their keys: active / pending / backup per serial), `SecretStore` (Keystore AES-GCM), `KeyImportReceiver` (adb import, DUMP-protected) |
+| `keys/` | `DeviceStore` (boxes and their keys: active / pending / backup per serial), `SecretStore` (Keystore AES-GCM); `KeyImportReceiver` (adb import, DUMP-protected) lives in `app/src/debug` |
 | `settings/` | `AppSettings`: theme, accent, home buttons, confirmations, haptics, stay connected |
 | `smart/` | Smart unlock: `CompanionLink` (companion association + presence watching), `SmartPresenceService` (system presence events), `SmartEntryService` (near the car: signal sampling, unlock/lock), `SmartEntryLogic` + `Cooldown` (pure decisions, tested), `SmartEntry` (coordinator, status), `SmartNotifications`. Never on together with legacy comfort entry (the box's AUTO_LOCK) |
 | `ui/` | Screens (`HomeScreen`, `GarageScreen`, `DeviceScreen`, `ComfortScreen`, `SettingsScreen`), `App` (navigation, messages), `Components`, `AppIcons`, `theme/` |
+
+Outside the app: `docs/` is the GitHub Pages site (English, `it/` Italian, privacy policy,
+screenshots; keep both languages in step), `fastlane/metadata/android` the Play Store listing,
+`scripts\release.cmd` the signed bundle (upload key in the user's `~/.gradle/gradle.properties`).
+Screenshots for either must not show real serials, BLE addresses or keys: use the simulator.
 
 Tests: `app/src/test` runs the protocol registry and, in `protocol/ftk`, the FTK wire format, pairing
 flows and session against `FakeBox`, a software box. `tools/esp32-sim` is an ESP32 FTK box simulator

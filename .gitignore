@@ -15,3 +15,7 @@ device_secrets*.json
 *.deviceKey.json
 # Logs pulled from the phone (they contain serials and addresses)
 /logs/
+# Signing keys: the Play upload key lives outside the repository
+*.jks
+*.keystore
+*.p12

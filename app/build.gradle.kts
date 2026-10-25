@@ -15,9 +15,24 @@ android {
         versionName = "0.1.0"
     }
 
+    // Upload key for Google Play, from the user's own ~/.gradle/gradle.properties (never in the repo).
+    // Without it release builds come out unsigned, and scripts\release.cmd refuses to run.
+    val uploadStore = providers.gradleProperty("BTCARKEY_STORE_FILE").orNull
+    signingConfigs {
+        if (uploadStore != null) {
+            create("upload") {
+                storeFile = file(uploadStore)
+                storePassword = providers.gradleProperty("BTCARKEY_STORE_PASSWORD").get()
+                keyAlias = providers.gradleProperty("BTCARKEY_KEY_ALIAS").get()
+                keyPassword = providers.gradleProperty("BTCARKEY_KEY_PASSWORD").get()
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("upload")
         }
     }
 

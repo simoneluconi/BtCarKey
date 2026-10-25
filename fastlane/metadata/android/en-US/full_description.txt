@@ -1,0 +1,36 @@
+BtCarKey turns your phone into the key of a car fitted with a Bluetooth LE keyless box. Unlock, lock and open the trunk with a tap, or let the car unlock as you walk up and lock as you walk away. No account, no cloud, and gentle on the battery.
+
+<b>Car commands</b>
+• Unlock, lock, trunk, lower windows and remote start
+• The remote's buttons held down, including the Function button
+• Risky commands need a long press; choose and order the buttons on the home screen
+
+<b>Hands-free smart unlock</b> (Android 12+)
+• Android notices the car in range with its own low-power scanning, even with the app closed
+• Only then does the phone connect and measure the signal: it unlocks when you are close and locks when you walk away
+• Guided calibration: stand by the door, then where the car should lock, and the app proposes the thresholds
+• Safety built in: unlocking needs you within a few metres, an optional check requires the phone to be unlocked, repeated pass-bys pause smart unlock, and a Pause button is always one tap away
+• A short vibration confirms every automatic lock; if the car couldn't be locked, you are warned
+
+<b>Gentle on the battery</b>
+• No background scanning and no polling
+• The Bluetooth controller waits for the car while the phone sleeps
+• The link closes 20 seconds after you leave the app, unless you ask it to stay connected
+
+<b>Private and secure</b>
+• No account, no ads, no analytics: the app doesn't even request the Internet permission
+• Each box's key is encrypted with the Android Keystore; showing or exporting it asks for your fingerprint or PIN
+• Automatic pairing: a new box gets a fresh random key, saved before it is sent
+
+<b>More</b>
+• Several boxes in one app, added by scanning or by importing a known key
+• Box details: battery, firmware, licence plate, NFC card registration
+• The box's own comfort entry (legacy) with presets and a live signal view
+• Light and dark theme, accent colors, English and Italian
+• Every connection step is shown on screen and logged, so problems are easy to understand
+
+<b>Compatibility</b>
+Works with aftermarket Bluetooth LE car boxes that speak the FTK protocol, such as the ones sold with the "redriverbear" app. Android 10 or newer. Use it only with your own car and box. This app is not affiliated with the box's vendor.
+
+<b>Open source</b>
+BtCarKey is free software under the GNU GPL v3. Source code and protocol documentation: https://github.com/simoneluconi/BtCarKey

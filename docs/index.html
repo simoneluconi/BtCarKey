@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BtCarKey – Your phone as a Bluetooth car key (Android, open source)</title>
+  <meta name="description" content="Free, open-source Android app that turns your phone into a Bluetooth LE car key: unlock, lock, trunk and hands-free proximity unlock. No account, no cloud, battery friendly.">
+  <link rel="canonical" href="https://simoneluconi.github.io/BtCarKey/">
+  <link rel="alternate" hreflang="en" href="https://simoneluconi.github.io/BtCarKey/">
+  <link rel="alternate" hreflang="it" href="https://simoneluconi.github.io/BtCarKey/it/">
+  <link rel="alternate" hreflang="x-default" href="https://simoneluconi.github.io/BtCarKey/">
+  <meta name="theme-color" content="#0B63CE">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-512.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="BtCarKey">
+  <meta property="og:title" content="BtCarKey – Your phone as a Bluetooth car key">
+  <meta property="og:description" content="Unlock, lock and open the trunk from your phone, or let the car unlock as you walk up. Open source, no account, no cloud.">
+  <meta property="og:url" content="https://simoneluconi.github.io/BtCarKey/">
+  <meta property="og:image" content="https://simoneluconi.github.io/BtCarKey/social-preview.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="it_IT">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "BtCarKey",
+    "description": "Open-source Android app that turns the phone into a Bluetooth LE car key for aftermarket keyless car boxes: unlock, lock, trunk, remote start and hands-free proximity unlock.",
+    "operatingSystem": "Android 10+",
+    "applicationCategory": "UtilitiesApplication",
+    "url": "https://simoneluconi.github.io/BtCarKey/",
+    "downloadUrl": "https://github.com/simoneluconi/BtCarKey/releases",
+    "codeRepository": "https://github.com/simoneluconi/BtCarKey",
+    "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+    "inLanguage": ["en", "it"],
+    "image": "https://simoneluconi.github.io/BtCarKey/icon-512.png",
+    "screenshot": "https://simoneluconi.github.io/BtCarKey/screenshots/home.jpg",
+    "author": { "@type": "Person", "name": "Simone Luconi", "url": "https://github.com/simoneluconi" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "Can I use my phone as a car key?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes, if the car has a Bluetooth LE keyless box installed. BtCarKey talks to the box directly over Bluetooth Low Energy and sends the same commands as the remote: unlock, lock, trunk, windows and remote start." } },
+      { "@type": "Question", "name": "Which boxes does BtCarKey work with?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Today it supports the FTK protocol, used by the aftermarket car boxes sold with the \"redriverbear\" app. The app is built around a protocol interface, so other Bluetooth car keys can be added." } },
+      { "@type": "Question", "name": "Does it need an Internet connection or an account?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. BtCarKey does not even request the Internet permission: there is no account, no cloud and no tracking. The keys stay on the phone, encrypted with the Android Keystore." } },
+      { "@type": "Question", "name": "How does smart unlock work?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Android notices the car in range with its own low-power scanning, even with the app closed. Only then does the phone connect and read the signal strength: it unlocks when you are close and locks when you walk away." } },
+      { "@type": "Question", "name": "Does it drain the battery?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. There is no background scanning and no polling. Waiting for the car is left to the Bluetooth controller, and smart unlock only works for the few minutes you are near the car." } },
+      { "@type": "Question", "name": "Is it free?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. BtCarKey is free and open source under the GNU GPL v3, with no ads." } }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="./"><img src="icon.svg" alt="" width="36" height="36">BtCarKey</a>
+      <a class="lang" href="it/" hreflang="it" lang="it">Italiano</a>
+    </header>
+
+    <main>
+      <div class="hero">
+        <div>
+          <h1>Your phone is the car key.</h1>
+          <p class="lead">BtCarKey is a free, open-source Android app for Bluetooth LE car boxes. Unlock, lock and open the trunk with a tap, or let the car unlock as you walk up and lock as you walk away. No account, no cloud, gentle on the battery.</p>
+          <div class="ctas">
+            <span class="btn soon" title="Coming soon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5v17l9-8.5z"/><path d="M5 3.5l12.5 7L14 12"/><path d="M5 20.5l12.5-7L14 12"/></svg>
+              Google Play: coming soon
+            </span>
+            <a class="btn primary" href="https://github.com/simoneluconi/BtCarKey">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.3 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>
+              Source code on GitHub
+            </a>
+          </div>
+          <ul class="chips">
+            <li>Android 10+</li>
+            <li>No Internet permission</li>
+            <li>GPL-3.0</li>
+            <li>English · Italiano</li>
+          </ul>
+        </div>
+        <div class="shot">
+          <picture>
+            <source srcset="screenshots/home-dark.jpg" media="(prefers-color-scheme: dark)">
+            <img class="phone" src="screenshots/home.jpg" width="1080" height="2160" alt="BtCarKey home screen: connection status and the unlock, lock, trunk and windows buttons">
+          </picture>
+        </div>
+      </div>
+
+      <section id="features">
+        <h2>Everything the remote does, and more</h2>
+        <p class="sub">Written from scratch to replace the box's original app, which needs an account, polls the box all the time and drains the battery.</p>
+        <div class="grid">
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M6.5 11h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19.5v-7A1.5 1.5 0 0 1 6.5 11z"/><path d="M8 11V7.5a4 4 0 0 1 7.7-1.5"/><path d="M12 15v2"/></svg></div>
+            <h3>Car commands</h3>
+            <p>Unlock, lock, trunk, lower windows and remote start, plus the remote's buttons held down. Risky commands need a long press.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5"/><path d="M8.5 15.5a5 5 0 0 1 0-7"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M5.6 18.4a9 9 0 0 1 0-12.8"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg></div>
+            <h3>Hands-free smart unlock</h3>
+            <p>Unlocks when you get close and locks when you walk away, with the app closed. Guided calibration, cooldown against pass-bys, pause button.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 7h13a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M22 11v2"/></svg></div>
+            <h3>Gentle on the battery</h3>
+            <p>No background scanning and no polling. The Bluetooth controller waits for the car while the phone sleeps.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l8.5-8.5"/><path d="M16 7l2 2"/><path d="M18.5 4.5l1.5 1.5"/></svg></div>
+            <h3>Keys stay on your phone</h3>
+            <p>Each box's key is encrypted with the Android Keystore. Showing or exporting it asks for your fingerprint or PIN.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/></svg></div>
+            <h3>No account, no cloud</h3>
+            <p>The app doesn't even ask for the Internet permission. Nothing is collected, nothing leaves the phone.</p>
+          </div>
+          <div class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M5 16v-5l2-5h10l2 5v5"/><path d="M3 16h18v2H3z"/><path d="M5 11h14"/></svg></div>
+            <h3>Several cars, one app</h3>
+            <p>Add boxes by scanning or by importing a known key. Light and dark theme, accent colors, home buttons you choose.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="screenshots">
+        <h2>Screenshots</h2>
+        <p class="sub">Taken on a Galaxy S25 Ultra connected to the project's ESP32 box simulator.</p>
+        <div class="shots">
+          <figure><img class="phone" src="screenshots/home.jpg" width="1080" height="2160" loading="lazy" alt="Home screen with the car connected and ready"><figcaption>Home</figcaption></figure>
+          <figure><img class="phone" src="screenshots/smart-unlock.jpg" width="1080" height="2160" loading="lazy" alt="Smart unlock screen with the live signal and the unlock and lock thresholds"><figcaption>Smart unlock</figcaption></figure>
+          <figure><img class="phone" src="screenshots/settings.jpg" width="1080" height="2160" loading="lazy" alt="Settings: theme, accent color and home buttons"><figcaption>Settings</figcaption></figure>
+          <figure><img class="phone" src="screenshots/smart-unlock-dark.jpg" width="1080" height="2160" loading="lazy" alt="Smart unlock screen in the dark theme"><figcaption>Dark theme</figcaption></figure>
+        </div>
+      </section>
+
+      <section id="smart-unlock">
+        <h2>How smart unlock works</h2>
+        <p class="sub">Keyless entry without a key fob in your pocket, and without keeping the phone connected all day.</p>
+        <ol class="steps">
+          <li>The car is paired once as a <em>companion device</em>. From then on Android itself notices when it comes into range, even with the app closed.</li>
+          <li>Only then does the phone connect and read the signal strength, about once a second.</li>
+          <li>Strong enough for a few readings in a row: the car unlocks. Walking away, below the lock threshold: the car locks and the phone lets go.</li>
+          <li>Safety limits are built in: unlocking needs you within a few metres, an optional check requires the phone to be unlocked, and repeated pass-bys suspend smart unlock.</li>
+        </ol>
+      </section>
+
+      <section id="compatibility">
+        <h2>Compatibility</h2>
+        <p class="sub">BtCarKey works with aftermarket Bluetooth LE car boxes that speak the FTK protocol, the ones sold with the "redriverbear" app. The protocol is documented in the repository, and the app is built so that other Bluetooth car keys can be added. Android 10 or newer; smart unlock needs Android 12 or newer.</p>
+      </section>
+
+      <section id="faq">
+        <h2>Frequently asked questions</h2>
+        <details><summary>Can I use my phone as a car key?</summary><p>Yes, if the car has a Bluetooth LE keyless box installed. BtCarKey talks to the box directly over Bluetooth Low Energy and sends the same commands as the remote: unlock, lock, trunk, windows and remote start.</p></details>
+        <details><summary>Which boxes does BtCarKey work with?</summary><p>Today it supports the FTK protocol, used by the aftermarket car boxes sold with the "redriverbear" app. The app is built around a protocol interface, so other Bluetooth car keys can be added.</p></details>
+        <details><summary>Does it need an Internet connection or an account?</summary><p>No. BtCarKey does not even request the Internet permission: there is no account, no cloud and no tracking. The keys stay on the phone, encrypted with the Android Keystore.</p></details>
+        <details><summary>How does smart unlock work?</summary><p>Android notices the car in range with its own low-power scanning, even with the app closed. Only then does the phone connect and read the signal strength: it unlocks when you are close and locks when you walk away.</p></details>
+        <details><summary>Does it drain the battery?</summary><p>No. There is no background scanning and no polling. Waiting for the car is left to the Bluetooth controller, and smart unlock only works for the few minutes you are near the car.</p></details>
+        <details><summary>Is it free?</summary><p>Yes. BtCarKey is free and open source under the GNU GPL v3, with no ads.</p></details>
+      </section>
+    </main>
+
+    <footer>
+      <p>BtCarKey by <a href="https://github.com/simoneluconi">Simone Luconi</a> · <a href="https://github.com/simoneluconi/BtCarKey">GitHub</a> · <a href="privacy.html">Privacy policy</a> · <a href="https://github.com/simoneluconi/BtCarKey/blob/main/LICENSE">GPL-3.0</a></p>
+      <p>Use it only with your own car and box. This project is not affiliated with the box's vendor.</p>
+    </footer>
+  </div>
+</body>
+</html>

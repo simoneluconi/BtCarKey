@@ -16,7 +16,7 @@ import com.simoneluconi.btcarkey.protocol.hexToBytesOrNull
  *         -a com.simoneluconi.btcarkey.IMPORT_KEY --es serial AA:BB:CC:DD:EE:FF --es key <hex> \
  *         [--es name "My car"] [--es mac AA:BB:CC:DD:EE:FF] [--es protocol ftk]
  *
- * Guarded by android.permission.DUMP, which the adb shell holds and ordinary apps can't get.
+ * Debug builds only. Guarded by android.permission.DUMP, which the adb shell holds and ordinary apps can't get.
  * The key never reaches the log; the result is in the log and in the broadcast's result data.
  */
 class KeyImportReceiver : BroadcastReceiver() {

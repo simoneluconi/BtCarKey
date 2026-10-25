@@ -1,0 +1,36 @@
+BtCarKey trasforma il telefono nella chiave di un'auto dotata di un box keyless Bluetooth LE. Apri, chiudi e apri il bagagliaio con un tocco, oppure lascia che l'auto si apra quando arrivi e si chiuda quando te ne vai. Senza account, senza cloud, leggera sulla batteria.
+
+<b>Comandi dell'auto</b>
+• Apri, chiudi, bagagliaio, abbassa i finestrini e avviamento remoto
+• I tasti del telecomando tenuti premuti, compreso il tasto Funzione
+• I comandi delicati richiedono una pressione lunga; scegli e ordina i pulsanti della home
+
+<b>Sblocco smart a mani libere</b> (Android 12+)
+• Android si accorge dell'auto nelle vicinanze con la sua scansione a basso consumo, anche ad app chiusa
+• Solo allora il telefono si collega e misura il segnale: apre quando sei vicino e chiude quando ti allontani
+• Calibrazione guidata: mettiti accanto alla portiera, poi dove l'auto deve chiudersi, e l'app propone le soglie
+• Sicurezza integrata: per aprire devi essere a pochi metri, un controllo opzionale richiede il telefono sbloccato, i passaggi ripetuti mettono in pausa lo sblocco smart e il tasto Pausa è sempre a portata di mano
+• Una breve vibrazione conferma ogni chiusura automatica; se l'auto non si è chiusa, vieni avvisato
+
+<b>Leggera sulla batteria</b>
+• Niente scansioni in background e niente polling
+• È il controller Bluetooth ad aspettare l'auto, mentre il telefono dorme
+• Il collegamento si chiude 20 secondi dopo che esci dall'app, a meno che tu non chieda di restare connesso
+
+<b>Privata e sicura</b>
+• Niente account, pubblicità o statistiche: l'app non chiede nemmeno il permesso Internet
+• La chiave di ogni box è cifrata con l'Android Keystore; per mostrarla o esportarla servono l'impronta o il PIN
+• Abbinamento automatico: un box nuovo riceve una chiave casuale, salvata prima di essere inviata
+
+<b>E poi</b>
+• Più box nella stessa app, aggiunti con una scansione o importando una chiave che conosci
+• Dettagli del box: batteria, firmware, targa, registrazione delle tessere NFC
+• Il comfort entry del box (legacy) con preset e segnale in tempo reale
+• Tema chiaro e scuro, colori d'accento, italiano e inglese
+• Ogni passaggio della connessione è mostrato a schermo e registrato nel log, così i problemi si capiscono subito
+
+<b>Compatibilità</b>
+Funziona con i box Bluetooth LE aftermarket che parlano il protocollo FTK, come quelli venduti con l'app "redriverbear". Android 10 o successivo. Usala solo con la tua auto e il tuo box. Questa app non è affiliata al produttore del box.
+
+<b>Open source</b>
+BtCarKey è software libero con licenza GNU GPL v3. Codice sorgente e documentazione del protocollo: https://github.com/simoneluconi/BtCarKey

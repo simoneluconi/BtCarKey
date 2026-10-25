@@ -1,10 +1,26 @@
-# BtCarKey
+# BtCarKey: your phone as a Bluetooth car key
 
-**An open Android app for Bluetooth LE car boxes, written from scratch to replace the vendor's app.**
+**A free, open-source Android app that turns your phone into the key of a car fitted with a
+Bluetooth LE keyless box: unlock, lock, trunk, remote start and hands-free smart unlock, with no
+account and no cloud.**
 
-The box (a small module wired into the car, sold with an app called "redriverbear") turns a phone
-into the car's key over Bluetooth Low Energy. The vendor app works poorly and drains the battery;
-BtCarKey talks to the same hardware directly, with no account and no cloud.
+[![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-0B63CE)](LICENSE)
+![Android 10+](https://img.shields.io/badge/Android-10%2B-1E8E3E)
+![Kotlin + Jetpack Compose](https://img.shields.io/badge/Kotlin-Jetpack%20Compose-4A5462)
+![No Internet permission](https://img.shields.io/badge/Internet%20permission-none-1E8E3E)
+
+🌐 **Website:** [simoneluconi.github.io/BtCarKey](https://simoneluconi.github.io/BtCarKey/) ·
+🇮🇹 [Italiano](https://simoneluconi.github.io/BtCarKey/it/) ·
+📱 Google Play: coming soon
+
+The box (a small aftermarket module wired into the car, sold with an app called "redriverbear")
+turns a phone into the car's key over Bluetooth Low Energy. The vendor app needs an account, works
+poorly and drains the battery; BtCarKey was written from scratch and talks to the same hardware
+directly, with no account and no cloud. It doesn't even request the Internet permission.
+
+| Home | Smart unlock | Settings | Dark theme |
+|---|---|---|---|
+| ![BtCarKey home screen: connection status and car commands](docs/screenshots/home.jpg) | ![Smart unlock: live signal and unlock and lock thresholds](docs/screenshots/smart-unlock.jpg) | ![Settings: theme, accent color, home buttons](docs/screenshots/settings.jpg) | ![Home screen in the dark theme](docs/screenshots/home-dark.jpg) |
 
 ## Features
 
@@ -97,6 +113,11 @@ On both screens the live signal is shown next to the threshold sliders while the
   by comfort entry). Then a minimal, silent notification is shown (Android requires one for a
   background connection) and the link runs at the low-power interval.
 
+## Privacy
+
+No account, no analytics, no ads, no Internet permission: nothing leaves the phone except the
+Bluetooth traffic to your box. Full policy: [privacy policy](https://simoneluconi.github.io/BtCarKey/privacy.html).
+
 ## Build and install
 
 Requirements: Android Studio (its JDK is used), a phone with USB debugging on.
@@ -104,7 +125,13 @@ Requirements: Android Studio (its JDK is used), a phone with USB debugging on.
 ```
 scripts\deploy.cmd            build, install and open the app (add -Tests to run the unit tests first)
 scripts\pull-log.cmd          copy the app's log from the phone into logs\
+scripts\release.cmd           unit tests + signed bundle for Google Play (app-release.aab)
 ```
+
+`release.cmd` signs with an upload key configured in your own `%USERPROFILE%\.gradle\gradle.properties`
+(`BTCARKEY_STORE_FILE`, `BTCARKEY_STORE_PASSWORD`, `BTCARKEY_KEY_ALIAS`, `BTCARKEY_KEY_PASSWORD`),
+never in the repository. The Play Store listing (texts, icon, screenshots) is in
+[`fastlane/metadata/android`](fastlane/metadata/android).
 
 ### Using an existing pairing
 
@@ -112,14 +139,15 @@ If the box is already paired (for example with the vendor app) and you know its 
 give it to the app instead of pairing again:
 
 - in the app: *Add a box → Import a key*, or
-- from the PC: put it in `device_secrets.json` (ignored by git) and run `scripts\push-key.cmd -Name "My car"`
+- from the PC, with a debug build: put it in `device_secrets.json` (ignored by git) and run
+  `scripts\push-key.cmd -Name "My car"`
 
 ```json
 { "serial": "AA:BB:CC:DD:EE:FF", "deviceKey": "00112233445566778899aabbccddeeff", "bleMac": "C0:00:00:00:00:01" }
 ```
 
-The receiver accepts this only from the adb shell. An exported key file has the same fields and can
-be pushed back the same way (`-File`).
+The receiver exists only in debug builds and accepts this only from the adb shell. An exported key
+file has the same fields and can be pushed back the same way (`-File`).
 
 ## Testing without the car
 
@@ -141,7 +169,12 @@ without touching the connection logic or the UI:
 
 Supported today: **FTK** ("redriverbear" boxes), described in [PROTOCOL.md](PROTOCOL.md): advertising,
 GATT layout, frame format, authentication and commands, reconstructed for interoperability with
-hardware the author owns.
+hardware the author owns. Contributions for other Bluetooth car keys are welcome.
+
+## License
+
+BtCarKey is free software: you can redistribute it and/or modify it under the terms of the
+[GNU General Public License v3.0](LICENSE).
 
 ## Disclaimer
 
