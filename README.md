@@ -11,7 +11,7 @@ account and no cloud.**
 
 🌐 **Website:** [simoneluconi.github.io/BtCarKey](https://simoneluconi.github.io/BtCarKey/) ·
 🇮🇹 [Italiano](https://simoneluconi.github.io/BtCarKey/it/) ·
-📱 Google Play: coming soon
+📱 [Get it on Google Play](https://play.google.com/store/apps/details?id=com.simoneluconi.btcarkey)
 
 The box (a small aftermarket module wired into the car, sold with an app called "redriverbear")
 turns a phone into the car's key over Bluetooth Low Energy. The vendor app needs an account, works
